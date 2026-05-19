@@ -10,7 +10,10 @@ const config = {
 			fallback: 'index.html',
 			pages: 'build',
 			assets: 'build'
-		})
+		}),
+		serviceWorker: {
+			register: false
+		}
 	}
 };
 

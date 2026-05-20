@@ -1,9 +1,9 @@
 <script lang="ts">
-	import './layout.css';
-	import favicon from '$lib/assets/favicon.svg';
-	import { onMount } from 'svelte';
-	import { initWorkspace } from '$lib/presentation/stores/workspace';
-	import Sidebar from '$lib/presentation/components/Sidebar.svelte';
+	import "./layout.css";
+	import favicon from "$lib/assets/favicon.svg";
+	import { onMount } from "svelte";
+	import { initWorkspace } from "$lib/presentation/stores/workspace";
+	import Sidebar from "$lib/presentation/components/Sidebar.svelte";
 
 	let { children } = $props();
 
@@ -13,7 +13,7 @@
 	onMount(async () => {
 		await initWorkspace();
 
-		const { registerSW } = await import('virtual:pwa-register');
+		const { registerSW } = await import("virtual:pwa-register");
 		registerSW({
 			immediate: true,
 			onNeedRefresh() {
@@ -25,7 +25,7 @@
 			},
 			onRegisteredSW(_swUrl, registration) {
 				setInterval(() => registration?.update(), 60_000);
-			}
+			},
 		});
 	});
 
@@ -41,7 +41,9 @@
 	<div class="toast toast-tl toast-success">
 		<div class="flex items-center gap-4">
 			<span>Nueva versión disponible</span>
-			<button class="btn btn-filled-primary btn-sm" onclick={applyUpdate}>Actualizar</button>
+			<button class="btn btn-filled-primary btn-sm" onclick={applyUpdate}
+				>Actualizar</button
+			>
 		</div>
 	</div>
 {/if}
@@ -53,7 +55,7 @@
 {/if}
 
 <div class="flex flex-col h-dvh">
-	<main class="flex-1 overflow-auto p-6 pb-20">
+	<main class="flex-1 overflow-auto p-6">
 		{@render children()}
 	</main>
 	<Sidebar />

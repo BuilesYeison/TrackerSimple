@@ -8,10 +8,10 @@ export class AppDatabase extends Dexie {
 
 	constructor() {
 		super('PersonalFinAppV2');
-		this.version(1).stores({
+		this.version(2).stores({
 			accounts: 'id, name, type, currency',
 			categories: 'id, &name, type',
-			records: 'id, type, accountId, toAccountId, categoryId, createdAt'
+			records: 'id, type, accountId, toAccountId, categoryId, date'
 		});
 	}
 }

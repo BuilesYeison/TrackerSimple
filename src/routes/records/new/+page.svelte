@@ -66,6 +66,8 @@
 		if (isNaN(amount)) amount = 0;
 
 		try {
+			const selectedDate = dateValue[0];
+			const date = new Date(selectedDate.year, selectedDate.month - 1, selectedDate.day);
 			await recordService.register({
 				type: recordType,
 				amount,
@@ -73,6 +75,7 @@
 				toAccountId: recordType === "transfer" ? toAccountId : null,
 				categoryId: recordType === "transfer" ? "" : categoryId,
 				note: note || null,
+				date,
 			});
 			toaster.success({ description: "Registro guardado" });
 			setTimeout(() => goto("/records"), 600);

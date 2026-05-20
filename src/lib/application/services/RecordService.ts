@@ -16,6 +16,7 @@ export class RecordService {
 		categoryId: string;
 		note?: string | null;
 		tag?: string | null;
+		date?: Date | null;
 	}): Promise<Record> {
 		const record = createRecord(params);
 		await this.repo.create(record);
@@ -32,7 +33,7 @@ export class RecordService {
 
 	async getRecent(limit = 5): Promise<Record[]> {
 		const all = await this.repo.findAll();
-		return all.sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime()).slice(0, limit);
+		return all.sort((a, b) => b.date.getTime() - a.date.getTime()).slice(0, limit);
 	}
 
 	async getAll(): Promise<Record[]> {

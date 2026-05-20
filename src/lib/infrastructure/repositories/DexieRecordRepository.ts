@@ -28,7 +28,7 @@ export class DexieRecordRepository implements IRecordRepository {
 
 	async findByDateRange(from: Date, to: Date): Promise<Record[]> {
 		return this.db.records
-			.where('createdAt')
+			.where('date')
 			.between(from, to)
 			.toArray();
 	}

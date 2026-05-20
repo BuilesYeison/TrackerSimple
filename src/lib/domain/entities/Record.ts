@@ -10,6 +10,7 @@ export interface Record {
 	categoryId: string;
 	note: string | null;
 	tag: string | null;
+	date: Date;
 	createdAt: Date;
 	updatedAt: Date;
 }
@@ -22,6 +23,7 @@ export function createRecord(params: {
 	categoryId: string;
 	note?: string | null;
 	tag?: string | null;
+	date?: Date | null;
 }): Record {
 	const now = new Date();
 	let id = uuidv4()
@@ -37,6 +39,7 @@ export function createRecord(params: {
 		categoryId: params.categoryId,
 		note: params.note ?? null,
 		tag: params.tag ?? null,
+		date: params.date ?? now,
 		createdAt: now,
 		updatedAt: now
 	};

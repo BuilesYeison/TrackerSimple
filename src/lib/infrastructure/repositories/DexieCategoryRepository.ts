@@ -22,7 +22,8 @@ export class DexieCategoryRepository implements ICategoryRepository {
 	}
 
 	async findDefaults(): Promise<Category[]> {
-		return this.db.categories.where('isDefault').equals(true).toArray();
+		const all = await this.findAll();
+		return all.filter((c) => c.isDefault);
 	}
 
 	async findByName(name: string): Promise<Category | null> {

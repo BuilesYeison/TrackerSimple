@@ -22,6 +22,7 @@ export class DexieAccountRepository implements IAccountRepository {
 	}
 
 	async findActive(): Promise<Account[]> {
-		return this.db.accounts.where('isActive').equals(true).toArray();
+		const all = await this.findAll();
+		return all.filter((a) => a.isActive);
 	}
 }

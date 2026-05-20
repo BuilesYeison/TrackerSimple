@@ -36,6 +36,7 @@
 		accounts = await accountService.getActive();
 		categories = await categoryService.getAll();
 		if (accounts.length > 0) accountId = accounts[0].id;
+		console.log(accounts, categories);
 	});
 
 	async function save() {
@@ -337,41 +338,45 @@
 		</Portal>
 	</DatePicker>
 
-	<label class="flex flex-col gap-1 text-xs font-medium text-surface-600-400">
-		<span>Cuenta origen</span>
-		<select bind:value={accountId} class="input w-full p-2">
-			<option value="" disabled>Selecciona cuenta</option>
-			{#each accounts as a (a.id)}
-				<option value={a.id}>{a.name} ({a.currency})</option>
-			{/each}
-		</select>
-	</label>
-
-	{#if recordType === "transfer"}
+	<div class="grid grid-cols-2 gap-4">
 		<label
 			class="flex flex-col gap-1 text-xs font-medium text-surface-600-400"
 		>
-			<span>Cuenta destino</span>
-			<select bind:value={toAccountId} class="input w-full p-2">
+			<span>Cuenta origen</span>
+			<select bind:value={accountId} class="input w-full p-2">
 				<option value="" disabled>Selecciona cuenta</option>
-				{#each availableAccounts as a (a.id)}
+				{#each accounts as a (a.id)}
 					<option value={a.id}>{a.name} ({a.currency})</option>
 				{/each}
 			</select>
 		</label>
-	{:else}
-		<label
-			class="flex flex-col gap-1 text-xs font-medium text-surface-600-400"
-		>
-			<span>Categoría</span>
-			<select bind:value={categoryId} class="input w-full p-2">
-				<option value="" disabled>Selecciona categoría</option>
-				{#each filteredCategories as c (c.id)}
-					<option value={c.id}>{c.name}</option>
-				{/each}
-			</select>
-		</label>
-	{/if}
+
+		{#if recordType === "transfer"}
+			<label
+				class="flex flex-col gap-1 text-xs font-medium text-surface-600-400"
+			>
+				<span>Cuenta destino</span>
+				<select bind:value={toAccountId} class="input w-full p-2">
+					<option value="" disabled>Selecciona cuenta</option>
+					{#each availableAccounts as a (a.id)}
+						<option value={a.id}>{a.name} ({a.currency})</option>
+					{/each}
+				</select>
+			</label>
+		{:else}
+			<label
+				class="flex flex-col gap-1 text-xs font-medium text-surface-600-400"
+			>
+				<span>Categoría</span>
+				<select bind:value={categoryId} class="input w-full p-2">
+					<option value="" disabled>Selecciona categoría</option>
+					{#each filteredCategories as c (c.id)}
+						<option value={c.id}>{c.name}</option>
+					{/each}
+				</select>
+			</label>
+		{/if}
+	</div>
 
 	<label class="flex flex-col gap-1 text-xs font-medium text-surface-600-400">
 		<span>Nota (opcional)</span>
@@ -459,7 +464,8 @@
 	</div>
 
 	<button
-		class="btn btn-filled-primary w-full p-2 {recordType === 'transfer'
+		class="btn btn-filled-primary w-full p-2 text-white {recordType ===
+		'transfer'
 			? 'bg-secondary-500'
 			: recordType == 'expense'
 				? 'bg-error-500'

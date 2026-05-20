@@ -3,6 +3,8 @@
 	import { goto } from "$app/navigation";
 	import { ArrowLeft, Calendar, Delete } from "@lucide/svelte";
 	import {
+		Toast,
+		createToaster,
 		DatePicker,
 		Portal,
 		parseDate,
@@ -25,6 +27,10 @@
 	let note = $state("");
 	let saving = $state(false);
 
+	const toaster = createToaster({
+		placement: "bottom-end",
+	});
+
 	let today = new Date();
 	let dateValue = $state([parseDate(today.toISOString().split("T")[0])]);
 
@@ -41,17 +47,20 @@
 	});
 
 	async function save() {
-		if (!accountId) return;
-		if (recordType !== "transfer" && !categoryId) return;
-		if (recordType === "transfer" && !toAccountId) return;
+		if (!accountId) {
+			toaster.warning({ description: "Selecciona una cuenta origen" });
+			return;
+		}
+		if (recordType !== "transfer" && !categoryId) {
+			toaster.warning({ description: "Selecciona una categoría" });
+			return;
+		}
+		if (recordType === "transfer" && !toAccountId) {
+			toaster.warning({ description: "Selecciona una cuenta destino" });
+			return;
+		}
 
 		saving = true;
-
-		const selectedDate = dateValue[0];
-		const year = selectedDate.year;
-		const month = String(selectedDate.month).padStart(2, "0");
-		const day = String(selectedDate.day).padStart(2, "0");
-		const createdAt = new Date(`${year}-${month}-${day}`);
 
 		let amount = parseFloat(calcDisplay);
 		if (isNaN(amount)) amount = 0;
@@ -65,7 +74,13 @@
 				categoryId: recordType === "transfer" ? "" : categoryId,
 				note: note || null,
 			});
-			goto("/records");
+			toaster.success({ description: "Registro guardado" });
+			setTimeout(() => goto("/records"), 600);
+		} catch (err) {
+			toaster.error({
+				title: "Error",
+				description: err instanceof Error ? err.message : "Algo salió mal",
+			});
 		} finally {
 			saving = false;
 		}
@@ -485,4 +500,16 @@
 			{saving ? "Guardando..." : "Guardar"}
 		</button>
 	</div>
+
+	<Toast.Group {toaster}>
+		{#snippet children(toast)}
+			<Toast {toast}>
+				<Toast.Message>
+					<Toast.Title>{toast.title}</Toast.Title>
+					<Toast.Description>{toast.description}</Toast.Description>
+				</Toast.Message>
+				<Toast.CloseTrigger />
+			</Toast>
+		{/snippet}
+	</Toast.Group>
 </div>

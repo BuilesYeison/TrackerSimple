@@ -1,3 +1,4 @@
+import { v4 as uuidv4 } from 'uuid';
 import type { RecordType } from './enums';
 
 export interface Record {
@@ -23,8 +24,12 @@ export function createRecord(params: {
 	tag?: string | null;
 }): Record {
 	const now = new Date();
+	let id = uuidv4()
+	if (typeof crypto !== undefined && crypto.randomUUID) {
+		id = crypto.randomUUID()
+	}
 	return {
-		id: crypto.randomUUID(),
+		id: id,
 		type: params.type,
 		amount: params.amount,
 		accountId: params.accountId,

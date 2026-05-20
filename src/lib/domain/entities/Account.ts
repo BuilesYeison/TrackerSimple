@@ -1,4 +1,5 @@
 import type { AccountType, Currency } from './enums';
+import { v4 as uuidv4 } from 'uuid'
 
 export interface Account {
 	id: string;
@@ -18,8 +19,12 @@ export function createAccount(params: {
 	balance?: number;
 }): Account {
 	const now = new Date();
+	let id = uuidv4()
+	if (typeof crypto !== undefined && crypto.randomUUID) {
+		id = crypto.randomUUID()
+	}
 	return {
-		id: crypto.randomUUID(),
+		id: id,
 		name: params.name,
 		type: params.type,
 		currency: params.currency,

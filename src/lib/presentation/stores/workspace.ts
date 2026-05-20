@@ -1,6 +1,7 @@
 import { getDb, seedDefaultCategories } from '../../infrastructure/db';
 import { DexieAccountRepository, DexieCategoryRepository, DexieRecordRepository } from '../../infrastructure/repositories';
 import { AccountService, CategoryService, RecordService } from '../../application/services';
+import { seedDefaultAccounts } from '$lib/infrastructure/db/seed';
 
 const db = getDb();
 
@@ -21,6 +22,7 @@ export const workspaceReady = new Promise<void>((r) => {
 export async function initWorkspace(): Promise<void> {
 	if (ready) return;
 	await seedDefaultCategories(db);
+	await seedDefaultAccounts(db)
 	ready = true;
 	resolveReady();
 }

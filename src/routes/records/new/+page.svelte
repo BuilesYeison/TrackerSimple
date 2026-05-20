@@ -158,7 +158,7 @@
 	);
 </script>
 
-<div class="mx-auto flex max-w-md flex-col gap-3 p-0">
+<div class="mx-auto flex h-full max-w-md flex-col">
 	<header class="flex items-center gap-3 relative">
 		<button
 			onclick={goBack}
@@ -170,175 +170,177 @@
 		</button>
 		<span class="text-center m-auto">Nuevo registro</span>
 	</header>
-
-	<div class="grid grid-cols-3 gap-2 rounded-2xl bg-surface-100-900 p-1">
-		<button
-			class="rounded-xl py-2 text-sm font-medium transition-colors {recordType ===
-			'expense'
-				? 'bg-error-500 text-white'
-				: 'text-surface-700-300'}"
-			onclick={() => {
-				recordType = "expense";
-				categoryId = "";
-			}}>Gasto</button
+	<div class="h-1/2 overflow-y-auto flex flex-col gap-3">
+		<div
+			class="grid grid-cols-3 gap-2 rounded-2xl bg-surface-100-900 p-1 recort-type-tabs"
 		>
-		<button
-			class="rounded-xl py-2 text-sm font-medium transition-colors {recordType ===
-			'income'
-				? 'bg-primary-500 text-white'
-				: 'text-surface-700-300'}"
-			onclick={() => {
-				recordType = "income";
-				categoryId = "";
-			}}>Ingreso</button
-		>
-		<button
-			class="rounded-xl py-2 text-sm font-medium transition-colors {recordType ===
-			'transfer'
-				? 'bg-secondary-500 text-white'
-				: 'text-surface-700-300'}"
-			onclick={() => {
-				recordType = "transfer";
-				categoryId = "";
-			}}>Transferencia</button
-		>
-	</div>
-
-	<div
-		class="text-center bg-surface-400 p-5 flex items-center justify-center rounded-lg"
-	>
-		<span class="text-5xl p-0 m-0">
-			<span class="text-white p-0 m-0">${calcDisplay}</span>
-		</span>
-	</div>
-
-	<DatePicker
-		value={dateValue}
-		class="p-0"
-		onValueChange={(e) => {
-			dateValue = e.value;
-		}}
-		locale="es"
-	>
-		<DatePicker.Label class="block text-xs font-medium text-surface-600-400"
-			>Fecha</DatePicker.Label
-		>
-		<DatePicker.Control>
-			<DatePicker.Input class="input w-full" />
-			<DatePicker.Trigger
-				class="btn btn-icon btn-ghost-surface btn-sm absolute right-2 top-1/2 -translate-y-1/2"
+			<button
+				class="rounded-xl py-2 text-sm font-medium transition-colors {recordType ===
+				'expense'
+					? 'bg-error-500 text-white'
+					: 'text-surface-700-300'}"
+				onclick={() => {
+					recordType = "expense";
+					categoryId = "";
+				}}>Gasto</button
 			>
-				<Calendar size={16} />
-			</DatePicker.Trigger>
-		</DatePicker.Control>
-		<Portal>
-			<DatePicker.Positioner>
-				<DatePicker.Content>
-					<DatePicker.View view="day">
-						<DatePicker.Context>
-							{#snippet children(datePicker)}
-								<DatePicker.ViewControl>
-									<DatePicker.PrevTrigger />
-									<DatePicker.ViewTrigger>
-										<DatePicker.RangeText />
-									</DatePicker.ViewTrigger>
-									<DatePicker.NextTrigger />
-								</DatePicker.ViewControl>
-								<DatePicker.Table>
-									<DatePicker.TableHead>
-										<DatePicker.TableRow>
-											{#each datePicker().weekDays as weekDay, id (id)}
-												<DatePicker.TableHeader
-													>{weekDay.short}</DatePicker.TableHeader
-												>
-											{/each}
-										</DatePicker.TableRow>
-									</DatePicker.TableHead>
-									<DatePicker.TableBody>
-										{#each datePicker().weeks as week, id (id)}
-											<DatePicker.TableRow>
-												{#each week as day, id (id)}
-													<DatePicker.TableCell
-														value={day}
-													>
-														<DatePicker.TableCellTrigger
-															>{day.day}</DatePicker.TableCellTrigger
-														>
-													</DatePicker.TableCell>
-												{/each}
-											</DatePicker.TableRow>
-										{/each}
-									</DatePicker.TableBody>
-								</DatePicker.Table>
-							{/snippet}
-						</DatePicker.Context>
-					</DatePicker.View>
-					<DatePicker.View view="month">
-						<DatePicker.Context>
-							{#snippet children(datePicker)}
-								<DatePicker.ViewControl>
-									<DatePicker.PrevTrigger />
-									<DatePicker.ViewTrigger>
-										<DatePicker.RangeText />
-									</DatePicker.ViewTrigger>
-									<DatePicker.NextTrigger />
-								</DatePicker.ViewControl>
-								<DatePicker.Table>
-									<DatePicker.TableBody>
-										{#each datePicker().getMonthsGrid( { columns: 4, format: "short" }, ) as months, id (id)}
-											<DatePicker.TableRow>
-												{#each months as month, id (id)}
-													<DatePicker.TableCell
-														value={month.value}
-													>
-														<DatePicker.TableCellTrigger
-															>{month.label}</DatePicker.TableCellTrigger
-														>
-													</DatePicker.TableCell>
-												{/each}
-											</DatePicker.TableRow>
-										{/each}
-									</DatePicker.TableBody>
-								</DatePicker.Table>
-							{/snippet}
-						</DatePicker.Context>
-					</DatePicker.View>
-					<DatePicker.View view="year">
-						<DatePicker.Context>
-							{#snippet children(datePicker)}
-								<DatePicker.ViewControl>
-									<DatePicker.PrevTrigger />
-									<DatePicker.ViewTrigger>
-										<DatePicker.RangeText />
-									</DatePicker.ViewTrigger>
-									<DatePicker.NextTrigger />
-								</DatePicker.ViewControl>
-								<DatePicker.Table>
-									<DatePicker.TableBody>
-										{#each datePicker().getYearsGrid( { columns: 4 }, ) as years, id (id)}
-											<DatePicker.TableRow>
-												{#each years as year, id (id)}
-													<DatePicker.TableCell
-														value={year.value}
-													>
-														<DatePicker.TableCellTrigger
-															>{year.label}</DatePicker.TableCellTrigger
-														>
-													</DatePicker.TableCell>
-												{/each}
-											</DatePicker.TableRow>
-										{/each}
-									</DatePicker.TableBody>
-								</DatePicker.Table>
-							{/snippet}
-						</DatePicker.Context>
-					</DatePicker.View>
-				</DatePicker.Content>
-			</DatePicker.Positioner>
-		</Portal>
-	</DatePicker>
+			<button
+				class="rounded-xl py-2 text-sm font-medium transition-colors {recordType ===
+				'income'
+					? 'bg-primary-500 text-white'
+					: 'text-surface-700-300'}"
+				onclick={() => {
+					recordType = "income";
+					categoryId = "";
+				}}>Ingreso</button
+			>
+			<button
+				class="rounded-xl py-2 text-sm font-medium transition-colors {recordType ===
+				'transfer'
+					? 'bg-secondary-500 text-white'
+					: 'text-surface-700-300'}"
+				onclick={() => {
+					recordType = "transfer";
+					categoryId = "";
+				}}>Transferencia</button
+			>
+		</div>
 
-	<div class="grid grid-cols-2 gap-4">
+		<div
+			class="text-center bg-surface-400 p-5 flex items-center justify-center rounded-lg"
+		>
+			<span class="text-5xl p-0 m-0">
+				<span class="text-white p-0 m-0">${calcDisplay}</span>
+			</span>
+		</div>
+
+		<DatePicker
+			value={dateValue}
+			class="p-0"
+			onValueChange={(e) => {
+				dateValue = e.value;
+			}}
+			locale="es"
+		>
+			<DatePicker.Label
+				class="block text-xs font-medium text-surface-600-400"
+				>Fecha</DatePicker.Label
+			>
+			<DatePicker.Control>
+				<DatePicker.Input class="input w-full" />
+				<DatePicker.Trigger
+					class="btn btn-icon btn-ghost-surface btn-sm absolute right-2 top-1/2 -translate-y-1/2"
+				>
+					<Calendar size={16} />
+				</DatePicker.Trigger>
+			</DatePicker.Control>
+			<Portal>
+				<DatePicker.Positioner>
+					<DatePicker.Content>
+						<DatePicker.View view="day">
+							<DatePicker.Context>
+								{#snippet children(datePicker)}
+									<DatePicker.ViewControl>
+										<DatePicker.PrevTrigger />
+										<DatePicker.ViewTrigger>
+											<DatePicker.RangeText />
+										</DatePicker.ViewTrigger>
+										<DatePicker.NextTrigger />
+									</DatePicker.ViewControl>
+									<DatePicker.Table>
+										<DatePicker.TableHead>
+											<DatePicker.TableRow>
+												{#each datePicker().weekDays as weekDay, id (id)}
+													<DatePicker.TableHeader
+														>{weekDay.short}</DatePicker.TableHeader
+													>
+												{/each}
+											</DatePicker.TableRow>
+										</DatePicker.TableHead>
+										<DatePicker.TableBody>
+											{#each datePicker().weeks as week, id (id)}
+												<DatePicker.TableRow>
+													{#each week as day, id (id)}
+														<DatePicker.TableCell
+															value={day}
+														>
+															<DatePicker.TableCellTrigger
+																>{day.day}</DatePicker.TableCellTrigger
+															>
+														</DatePicker.TableCell>
+													{/each}
+												</DatePicker.TableRow>
+											{/each}
+										</DatePicker.TableBody>
+									</DatePicker.Table>
+								{/snippet}
+							</DatePicker.Context>
+						</DatePicker.View>
+						<DatePicker.View view="month">
+							<DatePicker.Context>
+								{#snippet children(datePicker)}
+									<DatePicker.ViewControl>
+										<DatePicker.PrevTrigger />
+										<DatePicker.ViewTrigger>
+											<DatePicker.RangeText />
+										</DatePicker.ViewTrigger>
+										<DatePicker.NextTrigger />
+									</DatePicker.ViewControl>
+									<DatePicker.Table>
+										<DatePicker.TableBody>
+											{#each datePicker().getMonthsGrid( { columns: 4, format: "short" }, ) as months, id (id)}
+												<DatePicker.TableRow>
+													{#each months as month, id (id)}
+														<DatePicker.TableCell
+															value={month.value}
+														>
+															<DatePicker.TableCellTrigger
+																>{month.label}</DatePicker.TableCellTrigger
+															>
+														</DatePicker.TableCell>
+													{/each}
+												</DatePicker.TableRow>
+											{/each}
+										</DatePicker.TableBody>
+									</DatePicker.Table>
+								{/snippet}
+							</DatePicker.Context>
+						</DatePicker.View>
+						<DatePicker.View view="year">
+							<DatePicker.Context>
+								{#snippet children(datePicker)}
+									<DatePicker.ViewControl>
+										<DatePicker.PrevTrigger />
+										<DatePicker.ViewTrigger>
+											<DatePicker.RangeText />
+										</DatePicker.ViewTrigger>
+										<DatePicker.NextTrigger />
+									</DatePicker.ViewControl>
+									<DatePicker.Table>
+										<DatePicker.TableBody>
+											{#each datePicker().getYearsGrid( { columns: 4 }, ) as years, id (id)}
+												<DatePicker.TableRow>
+													{#each years as year, id (id)}
+														<DatePicker.TableCell
+															value={year.value}
+														>
+															<DatePicker.TableCellTrigger
+																>{year.label}</DatePicker.TableCellTrigger
+															>
+														</DatePicker.TableCell>
+													{/each}
+												</DatePicker.TableRow>
+											{/each}
+										</DatePicker.TableBody>
+									</DatePicker.Table>
+								{/snippet}
+							</DatePicker.Context>
+						</DatePicker.View>
+					</DatePicker.Content>
+				</DatePicker.Positioner>
+			</Portal>
+		</DatePicker>
+
 		<label
 			class="flex flex-col gap-1 text-xs font-medium text-surface-600-400"
 		>
@@ -376,103 +378,110 @@
 				</select>
 			</label>
 		{/if}
+
+		<label
+			class="flex flex-col gap-1 text-xs font-medium text-surface-600-400"
+		>
+			<span>Nota (opcional)</span>
+			<input
+				bind:value={note}
+				type="text"
+				class="input w-full"
+				placeholder="Agrega una nota..."
+			/>
+		</label>
 	</div>
 
-	<label class="flex flex-col gap-1 text-xs font-medium text-surface-600-400">
-		<span>Nota (opcional)</span>
-		<input
-			bind:value={note}
-			type="text"
-			class="input w-full"
-			placeholder="Agrega una nota..."
-		/>
-	</label>
+	<div class="h-1/2 shrink-0 flex flex-col gap-3">
+		<div class="flex-1 flex calculator">
+			<div class="grid grid-cols-4 gap-2 w-full">
+				<div class="col-span-3 grid grid-cols-3 gap-2">
+					<button
+						class="btn btn-ghost-surface btn-lg rounded-xl border text-lg"
+						onclick={() => pressDigit("7")}>7</button
+					>
+					<button
+						class="btn btn-ghost-surface btn-lg rounded-xl border text-lg"
+						onclick={() => pressDigit("8")}>8</button
+					>
+					<button
+						class="btn btn-ghost-surface btn-lg rounded-xl border text-lg"
+						onclick={() => pressDigit("9")}>9</button
+					>
+					<button
+						class="btn btn-ghost-surface btn-lg rounded-xl border text-lg"
+						onclick={() => pressDigit("4")}>4</button
+					>
+					<button
+						class="btn btn-ghost-surface btn-lg rounded-xl border text-lg"
+						onclick={() => pressDigit("5")}>5</button
+					>
+					<button
+						class="btn btn-ghost-surface btn-lg rounded-xl border text-lg"
+						onclick={() => pressDigit("6")}>6</button
+					>
+					<button
+						class="btn btn-ghost-surface btn-lg rounded-xl border text-lg"
+						onclick={() => pressDigit("1")}>1</button
+					>
+					<button
+						class="btn btn-ghost-surface btn-lg rounded-xl border text-lg"
+						onclick={() => pressDigit("2")}>2</button
+					>
+					<button
+						class="btn btn-ghost-surface btn-lg rounded-xl border text-lg"
+						onclick={() => pressDigit("3")}>3</button
+					>
+					<button
+						class="btn btn-ghost-surface btn-lg rounded-xl border text-lg"
+						onclick={() => pressDigit(".")}>.</button
+					>
+					<button
+						class="btn btn-ghost-surface btn-lg rounded-xl border text-lg"
+						onclick={() => pressDigit("0")}>0</button
+					>
+					<button
+						class="btn btn-ghost-surface btn-lg rounded-xl border text-lg"
+						onclick={pressBackspace}
+						><Delete class="size-5" /></button
+					>
+				</div>
+				<div class="col-span-1 grid grid-rows-5 gap-2">
+					<button
+						class="btn btn-ghost-surface btn-lg rounded-xl text-lg"
+						onclick={() => pressOp("÷")}>÷</button
+					>
+					<button
+						class="btn btn-ghost-surface btn-lg rounded-xl text-lg"
+						onclick={() => pressOp("×")}>×</button
+					>
+					<button
+						class="btn btn-ghost-surface btn-lg rounded-xl text-lg"
+						onclick={() => pressOp("-")}>−</button
+					>
+					<button
+						class="btn btn-ghost-surface btn-lg rounded-xl text-lg"
+						onclick={() => pressOp("+")}>+</button
+					>
+					<button
+						class="btn btn-filled-primary btn-lg rounded-xl text-lg row-span-1"
+						onclick={() => pressOp("=")}>=</button
+					>
+				</div>
+			</div>
+		</div>
 
-	<div class="grid grid-cols-4 gap-2">
-		<div class="col-span-3 grid grid-cols-3 gap-2">
-			<button
-				class="btn btn-ghost-surface btn-lg rounded-xl border text-lg"
-				onclick={() => pressDigit("7")}>7</button
-			>
-			<button
-				class="btn btn-ghost-surface btn-lg rounded-xl border text-lg"
-				onclick={() => pressDigit("8")}>8</button
-			>
-			<button
-				class="btn btn-ghost-surface btn-lg rounded-xl border text-lg"
-				onclick={() => pressDigit("9")}>9</button
-			>
-			<button
-				class="btn btn-ghost-surface btn-lg rounded-xl border text-lg"
-				onclick={() => pressDigit("4")}>4</button
-			>
-			<button
-				class="btn btn-ghost-surface btn-lg rounded-xl border text-lg"
-				onclick={() => pressDigit("5")}>5</button
-			>
-			<button
-				class="btn btn-ghost-surface btn-lg rounded-xl border text-lg"
-				onclick={() => pressDigit("6")}>6</button
-			>
-			<button
-				class="btn btn-ghost-surface btn-lg rounded-xl border text-lg"
-				onclick={() => pressDigit("1")}>1</button
-			>
-			<button
-				class="btn btn-ghost-surface btn-lg rounded-xl border text-lg"
-				onclick={() => pressDigit("2")}>2</button
-			>
-			<button
-				class="btn btn-ghost-surface btn-lg rounded-xl border text-lg"
-				onclick={() => pressDigit("3")}>3</button
-			>
-			<button
-				class="btn btn-ghost-surface btn-lg rounded-xl border text-lg"
-				onclick={() => pressDigit(".")}>.</button
-			>
-			<button
-				class="btn btn-ghost-surface btn-lg rounded-xl border text-lg"
-				onclick={() => pressDigit("0")}>0</button
-			>
-			<button
-				class="btn btn-ghost-surface btn-lg rounded-xl border text-lg"
-				onclick={pressBackspace}><Delete class="size-5" /></button
-			>
-		</div>
-		<div class="col-span-1 grid grid-rows-5 gap-2">
-			<button
-				class="btn btn-ghost-surface btn-lg rounded-xl text-lg"
-				onclick={() => pressOp("÷")}>÷</button
-			>
-			<button
-				class="btn btn-ghost-surface btn-lg rounded-xl text-lg"
-				onclick={() => pressOp("×")}>×</button
-			>
-			<button
-				class="btn btn-ghost-surface btn-lg rounded-xl text-lg"
-				onclick={() => pressOp("-")}>−</button
-			>
-			<button
-				class="btn btn-ghost-surface btn-lg rounded-xl text-lg"
-				onclick={() => pressOp("+")}>+</button
-			>
-			<button
-				class="btn btn-filled-primary btn-lg rounded-xl text-lg row-span-1"
-				onclick={() => pressOp("=")}>=</button
-			>
-		</div>
+		<button
+			class="btn btn-filled-primary w-full p-2 text-white {recordType ===
+			'transfer'
+				? 'bg-secondary-500'
+				: recordType == 'expense'
+					? 'bg-error-500'
+					: 'bg-primary-500'}"
+			onclick={save}
+			disabled={saving}
+		>
+			{saving ? "Guardando..." : "Guardar"}
+		</button>
 	</div>
-
-	<button
-		class="btn btn-filled-primary w-full p-2 text-white {recordType ===
-		'transfer'
-			? 'bg-secondary-500'
-			: recordType == 'expense'
-				? 'bg-error-500'
-				: 'bg-primary-500'}"
-		onclick={save}
-		disabled={saving}
-	>
-		{saving ? "Guardando..." : "Guardar"}
-	</button>
 </div>

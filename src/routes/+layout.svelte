@@ -23,7 +23,7 @@
 				offlineReady = true;
 				setTimeout(() => (offlineReady = false), 4000);
 			},
-			onRegisteredSW(_swUrl, registration) {
+			onRegisteredSW(_swUrl: any, registration: { update: () => any }) {
 				setInterval(() => registration?.update(), 60_000);
 			},
 		});

@@ -13,11 +13,16 @@ export const categoryService = new CategoryService(categoryRepo);
 export const recordService = new RecordService(recordRepo);
 
 let ready = false;
+let resolveReady: () => void;
+export const workspaceReady = new Promise<void>((r) => {
+	resolveReady = r;
+});
 
 export async function initWorkspace(): Promise<void> {
 	if (ready) return;
 	await seedDefaultCategories(db);
 	ready = true;
+	resolveReady();
 }
 
 export function isReady(): boolean {

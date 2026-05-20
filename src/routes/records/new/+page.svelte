@@ -11,6 +11,7 @@
 		accountService,
 		categoryService,
 		recordService,
+		workspaceReady,
 	} from "$lib/presentation/stores/workspace";
 	import type { Account } from "$lib/domain/entities";
 	import type { Category } from "$lib/domain/entities";
@@ -33,10 +34,10 @@
 	let calcReset = $state(false);
 
 	onMount(async () => {
+		await workspaceReady;
 		accounts = await accountService.getActive();
 		categories = await categoryService.getAll();
 		if (accounts.length > 0) accountId = accounts[0].id;
-		console.log(accounts, categories);
 	});
 
 	async function save() {

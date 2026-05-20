@@ -67,7 +67,11 @@
 
 		try {
 			const selectedDate = dateValue[0];
-			const date = new Date(selectedDate.year, selectedDate.month - 1, selectedDate.day);
+			const date = new Date(
+				selectedDate.year,
+				selectedDate.month - 1,
+				selectedDate.day,
+			);
 			await recordService.register({
 				type: recordType,
 				amount,
@@ -82,7 +86,8 @@
 		} catch (err) {
 			toaster.error({
 				title: "Error",
-				description: err instanceof Error ? err.message : "Algo salió mal",
+				description:
+					err instanceof Error ? err.message : "Algo salió mal",
 			});
 		} finally {
 			saving = false;
@@ -206,7 +211,7 @@
 			<button
 				class="rounded-xl py-2 text-sm font-medium transition-colors {recordType ===
 				'income'
-					? 'bg-primary-500 text-white'
+					? 'bg-success-700 text-white'
 					: 'text-surface-700-300'}"
 				onclick={() => {
 					recordType = "income";
@@ -496,7 +501,7 @@
 				? 'bg-secondary-500'
 				: recordType == 'expense'
 					? 'bg-error-500'
-					: 'bg-primary-500'}"
+					: 'bg-success-700'}"
 			onclick={save}
 			disabled={saving}
 		>

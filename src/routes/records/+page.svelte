@@ -11,7 +11,7 @@
 		formatGroupDate,
 		getMonthRange,
 		formatMonthLabel,
-	} from "$lib/utils/date-format";
+	} from "$lib/date-format";
 	import RecordItem from "$lib/presentation/components/RecordItem.svelte";
 	import type { Account } from "$lib/domain/entities";
 	import type { Category } from "$lib/domain/entities";
@@ -104,9 +104,9 @@
 	});
 
 	function subtotalColor(subtotal: number): string {
-		if (subtotal < 0) return "text-error-500";
-		if (subtotal > 0) return "text-success-700";
-		return "text-surface-500-400";
+		if (subtotal < 0) return "text-[#f87171]";
+		if (subtotal > 0) return "text-[#4ade80]";
+		return "text-[#444]";
 	}
 
 	function subtotalSign(subtotal: number): string {
@@ -118,7 +118,7 @@
 	<div class="flex items-center justify-between">
 		<button
 			onclick={() => navigateMonth(-1)}
-			class="btn btn-icon btn-ghost-surface btn-sm"
+			class="rounded-lg p-2 text-[#fafafa] hover:bg-[#141414] transition-colors"
 		>
 			<ChevronLeft size={20} />
 		</button>
@@ -126,60 +126,58 @@
 		{#if canGoForward}
 			<button
 				onclick={() => navigateMonth(1)}
-				class="btn btn-icon btn-ghost-surface btn-sm"
+				class="rounded-lg p-2 text-[#fafafa] hover:bg-[#141414] transition-colors"
 			>
 				<ChevronRight size={20} />
 			</button>
 		{:else}
-			<div class="w-8" />
+			<div class="w-8"></div>
 		{/if}
 	</div>
 
-	<div class="grid grid-cols-4 gap-2 rounded-2xl bg-surface-100-900 p-1">
+	<div class="grid grid-cols-4 gap-2 rounded-xl bg-[#111] p-1">
 		<button
-			class="rounded-xl py-2 text-xs font-medium transition-colors {filterType ===
+			class="rounded-xl py-2 text-sm font-medium transition-colors {filterType ===
 			'all'
-				? 'bg-surface-500 text-white'
-				: 'text-surface-700-300'}"
+				? 'bg-[#fafafa] text-[#0a0a0a]'
+				: 'text-[#444]'}"
 			onclick={() => (filterType = "all")}>Todos</button
 		>
 		<button
-			class="rounded-xl py-2 text-xs font-medium transition-colors {filterType ===
+			class="rounded-xl py-2 text-sm font-medium transition-colors {filterType ===
 			'expense'
-				? 'bg-error-500 text-white'
-				: 'text-surface-700-300'}"
+				? 'bg-[#f87171] text-white'
+				: 'text-[#444]'}"
 			onclick={() => (filterType = "expense")}>Gasto</button
 		>
 		<button
-			class="rounded-xl py-2 text-xs font-medium transition-colors {filterType ===
+			class="rounded-xl py-2 text-sm font-medium transition-colors {filterType ===
 			'income'
-				? 'bg-success-700 text-white'
-				: 'text-surface-700-300'}"
+				? 'bg-[#4ade80] text-[#0a0a0a]'
+				: 'text-[#444]'}"
 			onclick={() => (filterType = "income")}>Ingreso</button
 		>
 		<button
 			class="rounded-xl py-2 text-xs font-medium transition-colors {filterType ===
 			'transfer'
-				? 'bg-secondary-500 text-white'
-				: 'text-surface-700-300'}"
+				? 'bg-[#a78bfa] text-white'
+				: 'text-[#444]'}"
 			onclick={() => (filterType = "transfer")}>Transferencia</button
 		>
 	</div>
 
 	{#if groupedRecords.length === 0}
-		<div
-			class="flex flex-col items-center gap-2 py-12 text-surface-500-400"
-		>
+		<div class="flex flex-col items-center gap-2 py-12 text-[#444]">
 			<span class="text-4xl">📭</span>
 			<span>Sin registros este mes</span>
 		</div>
 	{:else}
 		{#each groupedRecords as { dateKey, records, subtotal }}
 			<div>
-				<div class="mb-1 text-xs font-medium text-surface-500-400">
+				<div class="mb-1 text-xs font-medium text-[#444]">
 					{formatGroupDate(dateKey)}
 				</div>
-				<div class="divide-y divide-surface-100-900">
+				<div class="divide-y divide-[#141414]">
 					{#each records as record (record.id)}
 						<RecordItem
 							{record}

@@ -1,1 +1,1 @@
-<h1 class="h1">Hola mundo — Accounts</h1>
+<h1 class="text-2xl font-bold">Hola mundo — Accounts</h1>

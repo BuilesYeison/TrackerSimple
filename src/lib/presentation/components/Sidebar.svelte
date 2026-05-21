@@ -1,13 +1,6 @@
 <script lang="ts">
 	import { page } from "$app/stores";
-	import {
-		House,
-		ArrowRightLeft,
-		Wallet,
-		BarChart3,
-		Cog,
-	} from "@lucide/svelte";
-	import { Navigation } from "@skeletonlabs/skeleton-svelte";
+	import { House, ArrowRightLeft, Wallet, BarChart3, Cog } from "@lucide/svelte";
 
 	const navItems = [
 		{ href: "/dashboard", label: "Dashboard", icon: House },
@@ -22,16 +15,16 @@
 	}
 </script>
 
-<Navigation layout="bar">
-	<Navigation.Menu class="grid grid-cols-5 gap-2">
-		{#each navItems as { href, label, icon: Icon } (href)}
-			<Navigation.TriggerAnchor
-				{href}
-				class={isActive(href) ? "preset-filled-primary-500" : ""}
-			>
-				<Icon class="size-5" />
-				<Navigation.TriggerText>{label}</Navigation.TriggerText>
-			</Navigation.TriggerAnchor>
-		{/each}
-	</Navigation.Menu>
-</Navigation>
+<nav class="flex h-16 items-center justify-around border-t border-[#141414] bg-[#0a0a0a]">
+	{#each navItems as { href, label, icon: Icon } (href)}
+		<a
+			{href}
+			class="flex flex-col items-center gap-1 px-3 py-2 text-xs transition-colors {isActive(href)
+				? 'text-[#4ade80]'
+				: 'text-[#444] hover:text-[#fafafa]'}"
+		>
+			<Icon class="size-5" />
+			<span>{label}</span>
+		</a>
+	{/each}
+</nav>

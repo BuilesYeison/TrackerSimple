@@ -1,6 +1,6 @@
 <script lang="ts">
 	import type { Record } from "$lib/domain/entities";
-	import { getCategoryEmoji } from "$lib/utils/category-icons";
+	import { getCategoryEmoji } from "$lib/category-icons";
 
 	let {
 		record,
@@ -28,10 +28,10 @@
 	const sign = $derived(record.type === "expense" ? "-" : "+");
 	const colorClass = $derived(
 		record.type === "expense"
-			? "text-error-500"
+			? "text-[#f87171]"
 			: record.type === "transfer"
-				? "text-secondary-500"
-				: "text-success-700",
+				? "text-[#a78bfa]"
+				: "text-[#4ade80]",
 	);
 	const formattedAmount = $derived(
 		`${sign}$${record.amount.toLocaleString("es")}`,
@@ -42,7 +42,7 @@
 	<span class="text-xl">{emoji}</span>
 	<div class="flex-1 min-w-0">
 		<div class="text-sm font-medium truncate">{displayCategory}</div>
-		<div class="text-xs text-surface-500-400 truncate">
+		<div class="text-xs text-[#444] truncate">
 			{displayAccount}
 		</div>
 	</div>

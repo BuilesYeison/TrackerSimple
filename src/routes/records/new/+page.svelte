@@ -1,14 +1,15 @@
 <script lang="ts">
 	import { onMount } from "svelte";
 	import { goto } from "$app/navigation";
-	import { ArrowLeft, Calendar, Delete } from "@lucide/svelte";
+	import { ArrowLeft, Delete, ChevronDown } from "@lucide/svelte";
+	import * as Popover from "$lib/components/ui/popover/index.js";
+	import { Calendar as CalendarComp } from "$lib/components/ui/calendar/index.js";
+	import { toast } from "svelte-sonner";
 	import {
-		Toast,
-		createToaster,
-		DatePicker,
-		Portal,
-		parseDate,
-	} from "@skeletonlabs/skeleton-svelte";
+		CalendarDate,
+		today,
+		getLocalTimeZone,
+	} from "@internationalized/date";
 	import {
 		accountService,
 		categoryService,
@@ -27,12 +28,7 @@
 	let note = $state("");
 	let saving = $state(false);
 
-	const toaster = createToaster({
-		placement: "bottom-end",
-	});
-
-	let today = new Date();
-	let dateValue = $state([parseDate(today.toISOString().split("T")[0])]);
+	let value = $state<CalendarDate>(today(getLocalTimeZone()));
 
 	let calcDisplay = $state("0");
 	let calcPrevious: number | null = $state(null);
@@ -48,15 +44,15 @@
 
 	async function save() {
 		if (!accountId) {
-			toaster.warning({ description: "Selecciona una cuenta origen" });
+			toast.warning("Selecciona una cuenta origen");
 			return;
 		}
 		if (recordType !== "transfer" && !categoryId) {
-			toaster.warning({ description: "Selecciona una categoría" });
+			toast.warning("Selecciona una categoría");
 			return;
 		}
 		if (recordType === "transfer" && !toAccountId) {
-			toaster.warning({ description: "Selecciona una cuenta destino" });
+			toast.warning("Selecciona una cuenta destino");
 			return;
 		}
 
@@ -66,12 +62,7 @@
 		if (isNaN(amount)) amount = 0;
 
 		try {
-			const selectedDate = dateValue[0];
-			const date = new Date(
-				selectedDate.year,
-				selectedDate.month - 1,
-				selectedDate.day,
-			);
+			const date = value.toDate(getLocalTimeZone());
 			await recordService.register({
 				type: recordType,
 				amount,
@@ -81,14 +72,10 @@
 				note: note || null,
 				date,
 			});
-			toaster.success({ description: "Registro guardado" });
+			toast.success("Registro guardado");
 			setTimeout(() => goto("/records"), 600);
 		} catch (err) {
-			toaster.error({
-				title: "Error",
-				description:
-					err instanceof Error ? err.message : "Algo salió mal",
-			});
+			toast.error(err instanceof Error ? err.message : "Algo salió mal");
 		} finally {
 			saving = false;
 		}
@@ -154,13 +141,6 @@
 		return str;
 	}
 
-	function clearCalc() {
-		calcDisplay = "0";
-		calcPrevious = null;
-		calcOp = null;
-		calcReset = false;
-	}
-
 	function pressBackspace() {
 		if (calcReset) return;
 		if (calcDisplay.length <= 1) {
@@ -180,29 +160,32 @@
 			? accounts.filter((a) => a.id !== accountId)
 			: [],
 	);
+
+	const dateLabel = $derived(
+		value
+			.toDate(getLocalTimeZone())
+			.toLocaleDateString("es", { dateStyle: "long" }),
+	);
 </script>
 
 <div class="mx-auto flex h-full max-w-md flex-col">
 	<header class="flex items-center gap-3 relative">
 		<button
 			onclick={goBack}
-			class="btn btn-icon btn-ghost-surface btn-sm absolute top-0 left-0"
-			style="top: -0.2rem; left: -0.5rem; "
+			class="rounded-lg text-[#fafafa] hover:bg-[#141414] transition-colors absolute"
 			aria-label="Atrás"
 		>
 			<ArrowLeft size={22} />
 		</button>
 		<span class="text-center m-auto">Nuevo registro</span>
 	</header>
-	<div class="h-1/2 overflow-y-auto flex flex-col gap-3">
-		<div
-			class="grid grid-cols-3 gap-2 rounded-2xl bg-surface-100-900 p-1 recort-type-tabs"
-		>
+	<div class="h-1/2 overflow-y-auto px-2 flex flex-col gap-3">
+		<div class="grid grid-cols-3 gap-2 rounded-xl bg-[#111] p-1">
 			<button
 				class="rounded-xl py-2 text-sm font-medium transition-colors {recordType ===
 				'expense'
-					? 'bg-error-500 text-white'
-					: 'text-surface-700-300'}"
+					? 'bg-[#f87171] text-white'
+					: 'text-[#444]'}"
 				onclick={() => {
 					recordType = "expense";
 					categoryId = "";
@@ -211,8 +194,8 @@
 			<button
 				class="rounded-xl py-2 text-sm font-medium transition-colors {recordType ===
 				'income'
-					? 'bg-success-700 text-white'
-					: 'text-surface-700-300'}"
+					? 'bg-[#4ade80] text-[#0a0a0a]'
+					: 'text-[#444]'}"
 				onclick={() => {
 					recordType = "income";
 					categoryId = "";
@@ -221,8 +204,8 @@
 			<button
 				class="rounded-xl py-2 text-sm font-medium transition-colors {recordType ===
 				'transfer'
-					? 'bg-secondary-500 text-white'
-					: 'text-surface-700-300'}"
+					? 'bg-[#a78bfa] text-white'
+					: 'text-[#444]'}"
 				onclick={() => {
 					recordType = "transfer";
 					categoryId = "";
@@ -231,145 +214,45 @@
 		</div>
 
 		<div
-			class="text-center bg-surface-400 p-5 flex items-center justify-center rounded-lg"
+			class="text-center bg-[#141414] p-5 flex items-center justify-center rounded-lg"
 		>
 			<span class="text-5xl p-0 m-0">
-				<span class="text-white p-0 m-0">${calcDisplay}</span>
+				<span class="text-[#fafafa] font-light p-0 m-0"
+					>${calcDisplay}</span
+				>
 			</span>
 		</div>
 
-		<DatePicker
-			value={dateValue}
-			class="p-0"
-			onValueChange={(e) => {
-				dateValue = e.value;
-			}}
-			locale="es"
-		>
-			<DatePicker.Label
-				class="block text-xs font-medium text-surface-600-400"
-				>Fecha</DatePicker.Label
-			>
-			<DatePicker.Control>
-				<DatePicker.Input class="input w-full" />
-				<DatePicker.Trigger
-					class="btn btn-icon btn-ghost-surface btn-sm absolute right-2 top-1/2 -translate-y-1/2"
-				>
-					<Calendar size={16} />
-				</DatePicker.Trigger>
-			</DatePicker.Control>
-			<Portal>
-				<DatePicker.Positioner>
-					<DatePicker.Content>
-						<DatePicker.View view="day">
-							<DatePicker.Context>
-								{#snippet children(datePicker)}
-									<DatePicker.ViewControl>
-										<DatePicker.PrevTrigger />
-										<DatePicker.ViewTrigger>
-											<DatePicker.RangeText />
-										</DatePicker.ViewTrigger>
-										<DatePicker.NextTrigger />
-									</DatePicker.ViewControl>
-									<DatePicker.Table>
-										<DatePicker.TableHead>
-											<DatePicker.TableRow>
-												{#each datePicker().weekDays as weekDay, id (id)}
-													<DatePicker.TableHeader
-														>{weekDay.short}</DatePicker.TableHeader
-													>
-												{/each}
-											</DatePicker.TableRow>
-										</DatePicker.TableHead>
-										<DatePicker.TableBody>
-											{#each datePicker().weeks as week, id (id)}
-												<DatePicker.TableRow>
-													{#each week as day, id (id)}
-														<DatePicker.TableCell
-															value={day}
-														>
-															<DatePicker.TableCellTrigger
-																>{day.day}</DatePicker.TableCellTrigger
-															>
-														</DatePicker.TableCell>
-													{/each}
-												</DatePicker.TableRow>
-											{/each}
-										</DatePicker.TableBody>
-									</DatePicker.Table>
-								{/snippet}
-							</DatePicker.Context>
-						</DatePicker.View>
-						<DatePicker.View view="month">
-							<DatePicker.Context>
-								{#snippet children(datePicker)}
-									<DatePicker.ViewControl>
-										<DatePicker.PrevTrigger />
-										<DatePicker.ViewTrigger>
-											<DatePicker.RangeText />
-										</DatePicker.ViewTrigger>
-										<DatePicker.NextTrigger />
-									</DatePicker.ViewControl>
-									<DatePicker.Table>
-										<DatePicker.TableBody>
-											{#each datePicker().getMonthsGrid( { columns: 4, format: "short" }, ) as months, id (id)}
-												<DatePicker.TableRow>
-													{#each months as month, id (id)}
-														<DatePicker.TableCell
-															value={month.value}
-														>
-															<DatePicker.TableCellTrigger
-																>{month.label}</DatePicker.TableCellTrigger
-															>
-														</DatePicker.TableCell>
-													{/each}
-												</DatePicker.TableRow>
-											{/each}
-										</DatePicker.TableBody>
-									</DatePicker.Table>
-								{/snippet}
-							</DatePicker.Context>
-						</DatePicker.View>
-						<DatePicker.View view="year">
-							<DatePicker.Context>
-								{#snippet children(datePicker)}
-									<DatePicker.ViewControl>
-										<DatePicker.PrevTrigger />
-										<DatePicker.ViewTrigger>
-											<DatePicker.RangeText />
-										</DatePicker.ViewTrigger>
-										<DatePicker.NextTrigger />
-									</DatePicker.ViewControl>
-									<DatePicker.Table>
-										<DatePicker.TableBody>
-											{#each datePicker().getYearsGrid( { columns: 4 }, ) as years, id (id)}
-												<DatePicker.TableRow>
-													{#each years as year, id (id)}
-														<DatePicker.TableCell
-															value={year.value}
-														>
-															<DatePicker.TableCellTrigger
-																>{year.label}</DatePicker.TableCellTrigger
-															>
-														</DatePicker.TableCell>
-													{/each}
-												</DatePicker.TableRow>
-											{/each}
-										</DatePicker.TableBody>
-									</DatePicker.Table>
-								{/snippet}
-							</DatePicker.Context>
-						</DatePicker.View>
-					</DatePicker.Content>
-				</DatePicker.Positioner>
-			</Portal>
-		</DatePicker>
+		<div class="flex flex-col gap-1">
+			<span class="text-xs font-medium text-[#444]">Fecha</span>
+			<Popover.Root>
+				<Popover.Trigger>
+					{#snippet child({ props })}
+						<button
+							{...props}
+							class="flex w-full items-center justify-between rounded-lg border border-[#141414] bg-[#0a0a0a] px-3 py-2 text-sm text-[#fafafa] font-normal hover:bg-[#111] transition-colors"
+						>
+							{dateLabel}
+							<ChevronDown size={16} />
+						</button>
+					{/snippet}
+				</Popover.Trigger>
+				<Popover.Content class="w-auto p-0">
+					<CalendarComp
+						type="single"
+						bind:value
+						captionLayout="dropdown"
+					/>
+				</Popover.Content>
+			</Popover.Root>
+		</div>
 
-		<label
-			class="flex flex-col gap-1 text-xs font-medium text-surface-600-400"
-		>
+		<label class="flex flex-col gap-1 text-xs font-medium text-[#444]">
 			<span>Cuenta origen</span>
-			<select bind:value={accountId} class="input w-full p-2">
+			<select
+				bind:value={accountId}
+				class="rounded-lg border border-[#141414] bg-[#0a0a0a] px-3 py-2 w-full text-sm text-[#fafafa]"
+			>
 				<option value="" disabled>Selecciona cuenta</option>
 				{#each accounts as a (a.id)}
 					<option value={a.id}>{a.name} ({a.currency})</option>
@@ -378,11 +261,12 @@
 		</label>
 
 		{#if recordType === "transfer"}
-			<label
-				class="flex flex-col gap-1 text-xs font-medium text-surface-600-400"
-			>
+			<label class="flex flex-col gap-1 text-xs font-medium text-[#444]">
 				<span>Cuenta destino</span>
-				<select bind:value={toAccountId} class="input w-full p-2">
+				<select
+					bind:value={toAccountId}
+					class="rounded-lg border border-[#141414] bg-[#0a0a0a] px-3 py-2 w-full text-sm text-[#fafafa]"
+				>
 					<option value="" disabled>Selecciona cuenta</option>
 					{#each availableAccounts as a (a.id)}
 						<option value={a.id}>{a.name} ({a.currency})</option>
@@ -390,11 +274,12 @@
 				</select>
 			</label>
 		{:else}
-			<label
-				class="flex flex-col gap-1 text-xs font-medium text-surface-600-400"
-			>
+			<label class="flex flex-col gap-1 text-xs font-medium text-[#444]">
 				<span>Categoría</span>
-				<select bind:value={categoryId} class="input w-full p-2">
+				<select
+					bind:value={categoryId}
+					class="rounded-lg border border-[#141414] bg-[#0a0a0a] px-3 py-2 w-full text-sm text-[#fafafa]"
+				>
 					<option value="" disabled>Selecciona categoría</option>
 					{#each filteredCategories as c (c.id)}
 						<option value={c.id}>{c.name}</option>
@@ -403,92 +288,90 @@
 			</label>
 		{/if}
 
-		<label
-			class="flex flex-col gap-1 text-xs font-medium text-surface-600-400"
-		>
+		<label class="flex flex-col gap-1 text-xs font-medium text-[#444]">
 			<span>Nota (opcional)</span>
 			<input
 				bind:value={note}
 				type="text"
-				class="input w-full"
+				class="rounded-lg border border-[#141414] bg-[#0a0a0a] px-3 py-2 w-full text-sm text-[#fafafa] placeholder:text-[#2a2a2a]"
 				placeholder="Agrega una nota..."
 			/>
 		</label>
 	</div>
 
 	<div class="h-1/2 shrink-0 flex flex-col gap-3">
-		<div class="flex-1 flex calculator">
+		<div class="flex-1 flex items-center">
 			<div class="grid grid-cols-4 gap-2 w-full">
 				<div class="col-span-3 grid grid-cols-3 gap-2">
 					<button
-						class="btn btn-ghost-surface btn-lg rounded-xl border text-lg"
+						class="rounded-xl border border-[#141414] py-3 text-lg text-[#fafafa] hover:bg-[#141414] transition-colors"
 						onclick={() => pressDigit("7")}>7</button
 					>
 					<button
-						class="btn btn-ghost-surface btn-lg rounded-xl border text-lg"
+						class="rounded-xl border border-[#141414] py-3 text-lg text-[#fafafa] hover:bg-[#141414] transition-colors"
 						onclick={() => pressDigit("8")}>8</button
 					>
 					<button
-						class="btn btn-ghost-surface btn-lg rounded-xl border text-lg"
+						class="rounded-xl border border-[#141414] py-3 text-lg text-[#fafafa] hover:bg-[#141414] transition-colors"
 						onclick={() => pressDigit("9")}>9</button
 					>
 					<button
-						class="btn btn-ghost-surface btn-lg rounded-xl border text-lg"
+						class="rounded-xl border border-[#141414] py-3 text-lg text-[#fafafa] hover:bg-[#141414] transition-colors"
 						onclick={() => pressDigit("4")}>4</button
 					>
 					<button
-						class="btn btn-ghost-surface btn-lg rounded-xl border text-lg"
+						class="rounded-xl border border-[#141414] py-3 text-lg text-[#fafafa] hover:bg-[#141414] transition-colors"
 						onclick={() => pressDigit("5")}>5</button
 					>
 					<button
-						class="btn btn-ghost-surface btn-lg rounded-xl border text-lg"
+						class="rounded-xl border border-[#141414] py-3 text-lg text-[#fafafa] hover:bg-[#141414] transition-colors"
 						onclick={() => pressDigit("6")}>6</button
 					>
 					<button
-						class="btn btn-ghost-surface btn-lg rounded-xl border text-lg"
+						class="rounded-xl border border-[#141414] py-3 text-lg text-[#fafafa] hover:bg-[#141414] transition-colors"
 						onclick={() => pressDigit("1")}>1</button
 					>
 					<button
-						class="btn btn-ghost-surface btn-lg rounded-xl border text-lg"
+						class="rounded-xl border border-[#141414] py-3 text-lg text-[#fafafa] hover:bg-[#141414] transition-colors"
 						onclick={() => pressDigit("2")}>2</button
 					>
 					<button
-						class="btn btn-ghost-surface btn-lg rounded-xl border text-lg"
+						class="rounded-xl border border-[#141414] py-3 text-lg text-[#fafafa] hover:bg-[#141414] transition-colors"
 						onclick={() => pressDigit("3")}>3</button
 					>
 					<button
-						class="btn btn-ghost-surface btn-lg rounded-xl border text-lg"
+						class="rounded-xl border border-[#141414] py-3 text-lg text-[#fafafa] hover:bg-[#141414] transition-colors"
 						onclick={() => pressDigit(".")}>.</button
 					>
 					<button
-						class="btn btn-ghost-surface btn-lg rounded-xl border text-lg"
+						class="rounded-xl border border-[#141414] py-3 text-lg text-[#fafafa] hover:bg-[#141414] transition-colors"
 						onclick={() => pressDigit("0")}>0</button
 					>
 					<button
-						class="btn btn-ghost-surface btn-lg rounded-xl border text-lg"
+						class="rounded-xl border border-[#141414] py-3 text-lg text-[#fafafa] hover:bg-[#141414] transition-colors"
 						onclick={pressBackspace}
-						><Delete class="size-5" /></button
+						><Delete class="size-5 m-auto" /></button
 					>
 				</div>
 				<div class="col-span-1 grid grid-rows-5 gap-2">
 					<button
-						class="btn btn-ghost-surface btn-lg rounded-xl text-lg"
+						class="rounded-xl border border-[#141414] py-3 text-lg text-[#fafafa] hover:bg-[#141414] transition-colors"
 						onclick={() => pressOp("÷")}>÷</button
 					>
 					<button
-						class="btn btn-ghost-surface btn-lg rounded-xl text-lg"
+						class="rounded-xl border border-[#141414] py-3 text-lg text-[#fafafa] hover:bg-[#141414] transition-colors"
 						onclick={() => pressOp("×")}>×</button
 					>
 					<button
-						class="btn btn-ghost-surface btn-lg rounded-xl text-lg"
+						class="rounded-xl border border-[#141414] py-3 text-lg text-[#fafafa] hover:bg-[#141414] transition-colors"
 						onclick={() => pressOp("-")}>−</button
 					>
 					<button
-						class="btn btn-ghost-surface btn-lg rounded-xl text-lg"
+						class="rounded-xl border border-[#141414] py-3 text-lg text-[#fafafa] hover:bg-[#141414] transition-colors"
 						onclick={() => pressOp("+")}>+</button
 					>
 					<button
-						class="btn btn-filled-primary btn-lg rounded-xl text-lg row-span-1"
+						class="rounded-xl bg-[#fafafa] py-3 text-lg font-medium text-[#0a0a0a] hover:bg-[#e5e5e5] transition-colors"
 						onclick={() => pressOp("=")}>=</button
 					>
 				</div>
@@ -496,28 +379,11 @@
 		</div>
 
 		<button
-			class="btn btn-filled-primary w-full p-2 text-white {recordType ===
-			'transfer'
-				? 'bg-secondary-500'
-				: recordType == 'expense'
-					? 'bg-error-500'
-					: 'bg-success-700'}"
+			class="w-full rounded-xl bg-[#fafafa] px-4 py-3 text-sm font-medium text-[#0a0a0a] disabled:opacity-50"
 			onclick={save}
 			disabled={saving}
 		>
 			{saving ? "Guardando..." : "Guardar"}
 		</button>
 	</div>
-
-	<Toast.Group {toaster}>
-		{#snippet children(toast)}
-			<Toast {toast}>
-				<Toast.Message>
-					<Toast.Title>{toast.title}</Toast.Title>
-					<Toast.Description>{toast.description}</Toast.Description>
-				</Toast.Message>
-				<Toast.CloseTrigger />
-			</Toast>
-		{/snippet}
-	</Toast.Group>
 </div>

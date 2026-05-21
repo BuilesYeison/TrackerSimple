@@ -1,0 +1,52 @@
+@import 'tailwindcss';
+
+:root {
+	--bg: #0a0a0a;
+	--surface: #111;
+	--surface-raised: #141414;
+	--border: #141414;
+	--text-primary: #fafafa;
+	--text-secondary: #444;
+	--text-muted: #2a2a2a;
+	--accent-green: #4ade80;
+	--accent-red: #f87171;
+	--accent-purple: #a78bfa;
+	--radius: 0.5rem;
+
+	--background: #0a0a0a;
+	--foreground: #fafafa;
+	--card: #111;
+	--card-foreground: #fafafa;
+	--popover: #111;
+	--popover-foreground: #fafafa;
+	--primary: #fafafa;
+	--primary-foreground: #0a0a0a;
+	--secondary: #141414;
+	--secondary-foreground: #fafafa;
+	--muted: #141414;
+	--muted-foreground: #444;
+	--accent: #141414;
+	--accent-foreground: #fafafa;
+	--destructive: #f87171;
+	--destructive-foreground: #fafafa;
+	--border: #141414;
+	--input: #141414;
+	--ring: #4ade80;
+
+	--color-bg: #0a0a0a;
+	--color-surface: #111111;
+	--color-surface-raised: #141414;
+	--color-border: #141414;
+	--color-text-primary: #fafafa;
+	--color-text-secondary: #444444;
+	--color-text-muted: #2a2a2a;
+	--color-accent-green: #4ade80;
+	--color-accent-red: #f87171;
+	--color-accent-purple: #a78bfa;
+}
+
+body {
+	background: var(--color-bg);
+	color: var(--color-text-primary);
+	font-family: ui-sans-serif, system-ui, sans-serif;
+}

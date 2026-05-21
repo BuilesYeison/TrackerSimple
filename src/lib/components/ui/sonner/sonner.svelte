@@ -12,7 +12,7 @@
 <Sonner
 	theme="dark"
 	class="toaster group"
-	style="--normal-bg: #111; --normal-text: #fafafa; --normal-border: #141414;"
+	style="--normal-bg: var(--color-surface); --normal-text: var(--color-foreground); --normal-border: var(--color-border);"
 	{...restProps}
 >
 	{#snippet loadingIcon()}

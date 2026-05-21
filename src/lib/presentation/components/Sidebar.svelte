@@ -15,13 +15,13 @@
 	}
 </script>
 
-<nav class="flex h-16 items-center justify-around border-t border-[#141414] bg-[#0a0a0a]">
+<nav class="flex h-16 items-center justify-around border-t border-border bg-background">
 	{#each navItems as { href, label, icon: Icon } (href)}
 		<a
 			{href}
 			class="flex flex-col items-center gap-1 px-3 py-2 text-xs transition-colors {isActive(href)
-				? 'text-[#4ade80]'
-				: 'text-[#444] hover:text-[#fafafa]'}"
+				? 'text-income'
+				: 'text-muted hover:text-foreground'}"
 		>
 			<Icon class="size-5" />
 			<span>{label}</span>

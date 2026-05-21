@@ -39,15 +39,15 @@
 <svelte:head><link rel="icon" href={favicon} /></svelte:head>
 
 {#if updateAvailable}
-	<div class="fixed top-4 left-4 z-50 flex items-center gap-4 rounded-xl border border-[#141414] bg-[#111] px-4 py-3">
-		<span class="text-sm text-[#fafafa]">Nueva versión disponible</span>
-		<button class="rounded-lg bg-[#4ade80] px-3 py-1.5 text-sm font-medium text-[#0a0a0a]" onclick={applyUpdate}>Actualizar</button>
+	<div class="fixed top-4 left-4 z-50 flex items-center gap-4 rounded-xl border border-border bg-surface px-4 py-3">
+		<span class="text-sm text-foreground">Nueva versión disponible</span>
+		<button class="rounded-lg bg-income px-3 py-1.5 text-sm font-medium text-primary-foreground" onclick={applyUpdate}>Actualizar</button>
 	</div>
 {/if}
 
 {#if offlineReady}
-	<div class="fixed top-4 right-4 z-50 rounded-xl border border-[#141414] bg-[#111] px-4 py-3">
-		<span class="text-sm text-[#fafafa]">App lista para usar sin conexión</span>
+	<div class="fixed top-4 right-4 z-50 rounded-xl border border-border bg-surface px-4 py-3">
+		<span class="text-sm text-foreground">App lista para usar sin conexión</span>
 	</div>
 {/if}
 

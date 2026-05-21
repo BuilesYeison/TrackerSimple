@@ -104,9 +104,9 @@
 	});
 
 	function subtotalColor(subtotal: number): string {
-		if (subtotal < 0) return "text-[#f87171]";
-		if (subtotal > 0) return "text-[#4ade80]";
-		return "text-[#444]";
+		if (subtotal < 0) return "text-expense";
+		if (subtotal > 0) return "text-income";
+		return "text-muted";
 	}
 
 	function subtotalSign(subtotal: number): string {
@@ -118,7 +118,7 @@
 	<div class="flex items-center justify-between">
 		<button
 			onclick={() => navigateMonth(-1)}
-			class="rounded-lg p-2 text-[#fafafa] hover:bg-[#141414] transition-colors"
+			class="rounded-lg p-2 text-foreground hover:bg-surface-raised transition-colors"
 		>
 			<ChevronLeft size={20} />
 		</button>
@@ -126,7 +126,7 @@
 		{#if canGoForward}
 			<button
 				onclick={() => navigateMonth(1)}
-				class="rounded-lg p-2 text-[#fafafa] hover:bg-[#141414] transition-colors"
+				class="rounded-lg p-2 text-foreground hover:bg-surface-raised transition-colors"
 			>
 				<ChevronRight size={20} />
 			</button>
@@ -135,49 +135,49 @@
 		{/if}
 	</div>
 
-	<div class="grid grid-cols-4 gap-2 rounded-xl bg-[#111] p-1">
+	<div class="grid grid-cols-4 gap-2 rounded-xl bg-surface p-1">
 		<button
 			class="rounded-xl py-2 text-sm font-medium transition-colors {filterType ===
 			'all'
-				? 'bg-[#fafafa] text-[#0a0a0a]'
-				: 'text-[#444]'}"
+				? 'bg-primary text-primary-foreground'
+				: 'text-muted'}"
 			onclick={() => (filterType = "all")}>Todos</button
 		>
 		<button
 			class="rounded-xl py-2 text-sm font-medium transition-colors {filterType ===
 			'expense'
-				? 'bg-[#f87171] text-white'
-				: 'text-[#444]'}"
+				? 'bg-expense text-white'
+				: 'text-muted'}"
 			onclick={() => (filterType = "expense")}>Gasto</button
 		>
 		<button
 			class="rounded-xl py-2 text-sm font-medium transition-colors {filterType ===
 			'income'
-				? 'bg-[#4ade80] text-[#0a0a0a]'
-				: 'text-[#444]'}"
+				? 'bg-income text-primary-foreground'
+				: 'text-muted'}"
 			onclick={() => (filterType = "income")}>Ingreso</button
 		>
 		<button
 			class="rounded-xl py-2 text-xs font-medium transition-colors {filterType ===
 			'transfer'
-				? 'bg-[#a78bfa] text-white'
-				: 'text-[#444]'}"
+				? 'bg-transfer text-white'
+				: 'text-muted'}"
 			onclick={() => (filterType = "transfer")}>Transferencia</button
 		>
 	</div>
 
 	{#if groupedRecords.length === 0}
-		<div class="flex flex-col items-center gap-2 py-12 text-[#444]">
+		<div class="flex flex-col items-center gap-2 py-12 text-muted">
 			<span class="text-4xl">📭</span>
 			<span>Sin registros este mes</span>
 		</div>
 	{:else}
 		{#each groupedRecords as { dateKey, records, subtotal }}
 			<div>
-				<div class="mb-1 text-xs font-medium text-[#444]">
+				<div class="mb-1 text-xs font-medium text-muted">
 					{formatGroupDate(dateKey)}
 				</div>
-				<div class="divide-y divide-[#141414]">
+				<div class="divide-y divide-border">
 					{#each records as record (record.id)}
 						<RecordItem
 							{record}

@@ -28,10 +28,10 @@
 	const sign = $derived(record.type === "expense" ? "-" : "+");
 	const colorClass = $derived(
 		record.type === "expense"
-			? "text-[#f87171]"
+			? "text-expense"
 			: record.type === "transfer"
-				? "text-[#a78bfa]"
-				: "text-[#4ade80]",
+				? "text-transfer"
+				: "text-income",
 	);
 	const formattedAmount = $derived(
 		`${sign}$${record.amount.toLocaleString("es")}`,
@@ -42,7 +42,7 @@
 	<span class="text-xl">{emoji}</span>
 	<div class="flex-1 min-w-0">
 		<div class="text-sm font-medium truncate">{displayCategory}</div>
-		<div class="text-xs text-[#444] truncate">
+		<div class="text-xs text-muted truncate">
 			{displayAccount}
 		</div>
 	</div>

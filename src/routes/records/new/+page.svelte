@@ -172,7 +172,7 @@
 	<header class="flex items-center gap-3 relative">
 		<button
 			onclick={goBack}
-			class="rounded-lg text-[#fafafa] hover:bg-[#141414] transition-colors absolute"
+			class="rounded-lg text-foreground hover:bg-surface-raised transition-colors absolute"
 			aria-label="Atrás"
 		>
 			<ArrowLeft size={22} />
@@ -180,12 +180,12 @@
 		<span class="text-center m-auto">Nuevo registro</span>
 	</header>
 	<div class="h-1/2 overflow-y-auto px-2 flex flex-col gap-3">
-		<div class="grid grid-cols-3 gap-2 rounded-xl bg-[#111] p-1">
+		<div class="grid grid-cols-3 gap-2 rounded-xl bg-surface p-1">
 			<button
 				class="rounded-xl py-2 text-sm font-medium transition-colors {recordType ===
 				'expense'
-					? 'bg-[#f87171] text-white'
-					: 'text-[#444]'}"
+					? 'bg-expense text-white'
+					: 'text-muted'}"
 				onclick={() => {
 					recordType = "expense";
 					categoryId = "";
@@ -194,8 +194,8 @@
 			<button
 				class="rounded-xl py-2 text-sm font-medium transition-colors {recordType ===
 				'income'
-					? 'bg-[#4ade80] text-[#0a0a0a]'
-					: 'text-[#444]'}"
+					? 'bg-income text-primary-foreground'
+					: 'text-muted'}"
 				onclick={() => {
 					recordType = "income";
 					categoryId = "";
@@ -204,8 +204,8 @@
 			<button
 				class="rounded-xl py-2 text-sm font-medium transition-colors {recordType ===
 				'transfer'
-					? 'bg-[#a78bfa] text-white'
-					: 'text-[#444]'}"
+					? 'bg-transfer text-white'
+					: 'text-muted'}"
 				onclick={() => {
 					recordType = "transfer";
 					categoryId = "";
@@ -214,23 +214,23 @@
 		</div>
 
 		<div
-			class="text-center bg-[#141414] p-5 flex items-center justify-center rounded-lg"
+			class="text-center bg-surface-raised p-5 flex items-center justify-center rounded-lg"
 		>
 			<span class="text-5xl p-0 m-0">
-				<span class="text-[#fafafa] font-light p-0 m-0"
+				<span class="text-foreground font-light p-0 m-0"
 					>${calcDisplay}</span
 				>
 			</span>
 		</div>
 
 		<div class="flex flex-col gap-1">
-			<span class="text-xs font-medium text-[#444]">Fecha</span>
+			<span class="text-xs font-medium text-muted">Fecha</span>
 			<Popover.Root>
 				<Popover.Trigger>
 					{#snippet child({ props })}
 						<button
 							{...props}
-							class="flex w-full items-center justify-between rounded-lg border border-[#141414] bg-[#0a0a0a] px-3 py-2 text-sm text-[#fafafa] font-normal hover:bg-[#111] transition-colors"
+							class="flex w-full items-center justify-between rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground font-normal hover:bg-surface transition-colors"
 						>
 							{dateLabel}
 							<ChevronDown size={16} />
@@ -247,11 +247,11 @@
 			</Popover.Root>
 		</div>
 
-		<label class="flex flex-col gap-1 text-xs font-medium text-[#444]">
+		<label class="flex flex-col gap-1 text-xs font-medium text-muted">
 			<span>Cuenta origen</span>
 			<select
 				bind:value={accountId}
-				class="rounded-lg border border-[#141414] bg-[#0a0a0a] px-3 py-2 w-full text-sm text-[#fafafa]"
+				class="rounded-lg border border-border bg-background px-3 py-2 w-full text-sm text-foreground"
 			>
 				<option value="" disabled>Selecciona cuenta</option>
 				{#each accounts as a (a.id)}
@@ -261,11 +261,11 @@
 		</label>
 
 		{#if recordType === "transfer"}
-			<label class="flex flex-col gap-1 text-xs font-medium text-[#444]">
+			<label class="flex flex-col gap-1 text-xs font-medium text-muted">
 				<span>Cuenta destino</span>
 				<select
 					bind:value={toAccountId}
-					class="rounded-lg border border-[#141414] bg-[#0a0a0a] px-3 py-2 w-full text-sm text-[#fafafa]"
+					class="rounded-lg border border-border bg-background px-3 py-2 w-full text-sm text-foreground"
 				>
 					<option value="" disabled>Selecciona cuenta</option>
 					{#each availableAccounts as a (a.id)}
@@ -274,11 +274,11 @@
 				</select>
 			</label>
 		{:else}
-			<label class="flex flex-col gap-1 text-xs font-medium text-[#444]">
+			<label class="flex flex-col gap-1 text-xs font-medium text-muted">
 				<span>Categoría</span>
 				<select
 					bind:value={categoryId}
-					class="rounded-lg border border-[#141414] bg-[#0a0a0a] px-3 py-2 w-full text-sm text-[#fafafa]"
+					class="rounded-lg border border-border bg-background px-3 py-2 w-full text-sm text-foreground"
 				>
 					<option value="" disabled>Selecciona categoría</option>
 					{#each filteredCategories as c (c.id)}
@@ -288,12 +288,12 @@
 			</label>
 		{/if}
 
-		<label class="flex flex-col gap-1 text-xs font-medium text-[#444]">
+		<label class="flex flex-col gap-1 text-xs font-medium text-muted">
 			<span>Nota (opcional)</span>
 			<input
 				bind:value={note}
 				type="text"
-				class="rounded-lg border border-[#141414] bg-[#0a0a0a] px-3 py-2 w-full text-sm text-[#fafafa] placeholder:text-[#2a2a2a]"
+				class="rounded-lg border border-border bg-background px-3 py-2 w-full text-sm text-foreground placeholder:text-muted-foreground"
 				placeholder="Agrega una nota..."
 			/>
 		</label>
@@ -304,74 +304,74 @@
 			<div class="grid grid-cols-4 gap-2 w-full">
 				<div class="col-span-3 grid grid-cols-3 gap-2">
 					<button
-						class="rounded-xl border border-[#141414] py-3 text-lg text-[#fafafa] hover:bg-[#141414] transition-colors"
+						class="rounded-xl border border-border py-3 text-lg text-foreground hover:bg-surface-raised transition-colors"
 						onclick={() => pressDigit("7")}>7</button
 					>
 					<button
-						class="rounded-xl border border-[#141414] py-3 text-lg text-[#fafafa] hover:bg-[#141414] transition-colors"
+						class="rounded-xl border border-border py-3 text-lg text-foreground hover:bg-surface-raised transition-colors"
 						onclick={() => pressDigit("8")}>8</button
 					>
 					<button
-						class="rounded-xl border border-[#141414] py-3 text-lg text-[#fafafa] hover:bg-[#141414] transition-colors"
+						class="rounded-xl border border-border py-3 text-lg text-foreground hover:bg-surface-raised transition-colors"
 						onclick={() => pressDigit("9")}>9</button
 					>
 					<button
-						class="rounded-xl border border-[#141414] py-3 text-lg text-[#fafafa] hover:bg-[#141414] transition-colors"
+						class="rounded-xl border border-border py-3 text-lg text-foreground hover:bg-surface-raised transition-colors"
 						onclick={() => pressDigit("4")}>4</button
 					>
 					<button
-						class="rounded-xl border border-[#141414] py-3 text-lg text-[#fafafa] hover:bg-[#141414] transition-colors"
+						class="rounded-xl border border-border py-3 text-lg text-foreground hover:bg-surface-raised transition-colors"
 						onclick={() => pressDigit("5")}>5</button
 					>
 					<button
-						class="rounded-xl border border-[#141414] py-3 text-lg text-[#fafafa] hover:bg-[#141414] transition-colors"
+						class="rounded-xl border border-border py-3 text-lg text-foreground hover:bg-surface-raised transition-colors"
 						onclick={() => pressDigit("6")}>6</button
 					>
 					<button
-						class="rounded-xl border border-[#141414] py-3 text-lg text-[#fafafa] hover:bg-[#141414] transition-colors"
+						class="rounded-xl border border-border py-3 text-lg text-foreground hover:bg-surface-raised transition-colors"
 						onclick={() => pressDigit("1")}>1</button
 					>
 					<button
-						class="rounded-xl border border-[#141414] py-3 text-lg text-[#fafafa] hover:bg-[#141414] transition-colors"
+						class="rounded-xl border border-border py-3 text-lg text-foreground hover:bg-surface-raised transition-colors"
 						onclick={() => pressDigit("2")}>2</button
 					>
 					<button
-						class="rounded-xl border border-[#141414] py-3 text-lg text-[#fafafa] hover:bg-[#141414] transition-colors"
+						class="rounded-xl border border-border py-3 text-lg text-foreground hover:bg-surface-raised transition-colors"
 						onclick={() => pressDigit("3")}>3</button
 					>
 					<button
-						class="rounded-xl border border-[#141414] py-3 text-lg text-[#fafafa] hover:bg-[#141414] transition-colors"
+						class="rounded-xl border border-border py-3 text-lg text-foreground hover:bg-surface-raised transition-colors"
 						onclick={() => pressDigit(".")}>.</button
 					>
 					<button
-						class="rounded-xl border border-[#141414] py-3 text-lg text-[#fafafa] hover:bg-[#141414] transition-colors"
+						class="rounded-xl border border-border py-3 text-lg text-foreground hover:bg-surface-raised transition-colors"
 						onclick={() => pressDigit("0")}>0</button
 					>
 					<button
-						class="rounded-xl border border-[#141414] py-3 text-lg text-[#fafafa] hover:bg-[#141414] transition-colors"
+						class="rounded-xl border border-border py-3 text-lg text-foreground hover:bg-surface-raised transition-colors"
 						onclick={pressBackspace}
 						><Delete class="size-5 m-auto" /></button
 					>
 				</div>
 				<div class="col-span-1 grid grid-rows-5 gap-2">
 					<button
-						class="rounded-xl border border-[#141414] py-3 text-lg text-[#fafafa] hover:bg-[#141414] transition-colors"
+						class="rounded-xl border border-border py-3 text-lg text-foreground hover:bg-surface-raised transition-colors"
 						onclick={() => pressOp("÷")}>÷</button
 					>
 					<button
-						class="rounded-xl border border-[#141414] py-3 text-lg text-[#fafafa] hover:bg-[#141414] transition-colors"
+						class="rounded-xl border border-border py-3 text-lg text-foreground hover:bg-surface-raised transition-colors"
 						onclick={() => pressOp("×")}>×</button
 					>
 					<button
-						class="rounded-xl border border-[#141414] py-3 text-lg text-[#fafafa] hover:bg-[#141414] transition-colors"
+						class="rounded-xl border border-border py-3 text-lg text-foreground hover:bg-surface-raised transition-colors"
 						onclick={() => pressOp("-")}>−</button
 					>
 					<button
-						class="rounded-xl border border-[#141414] py-3 text-lg text-[#fafafa] hover:bg-[#141414] transition-colors"
+						class="rounded-xl border border-border py-3 text-lg text-foreground hover:bg-surface-raised transition-colors"
 						onclick={() => pressOp("+")}>+</button
 					>
 					<button
-						class="rounded-xl bg-[#fafafa] py-3 text-lg font-medium text-[#0a0a0a] hover:bg-[#e5e5e5] transition-colors"
+						class="rounded-xl bg-primary py-3 text-lg font-medium text-primary-foreground hover:opacity-90 transition-colors"
 						onclick={() => pressOp("=")}>=</button
 					>
 				</div>
@@ -379,7 +379,7 @@
 		</div>
 
 		<button
-			class="w-full rounded-xl bg-[#fafafa] px-4 py-3 text-sm font-medium text-[#0a0a0a] disabled:opacity-50"
+			class="w-full rounded-xl bg-primary px-4 py-3 text-sm font-medium text-primary-foreground disabled:opacity-50"
 			onclick={save}
 			disabled={saving}
 		>

@@ -4,10 +4,17 @@
 	let {
 		account,
 		balance,
+		onedit,
+		ondelete,
 	}: {
 		account: Account;
 		balance: number;
+		onedit: () => void;
+		ondelete: () => Promise<void>;
 	} = $props();
+
+	let expanded = $state(false);
+	let deleting = $state(false);
 
 	const barColor = $derived(
 		account.type === "cash"
@@ -30,19 +37,48 @@
 	const formattedBalance = $derived(
 		`${balanceSign}$${Math.abs(balance).toLocaleString("es")}`,
 	);
+
+	async function handleDelete() {
+		deleting = true;
+		try {
+			await ondelete();
+		} finally {
+			deleting = false;
+			expanded = false;
+		}
+	}
 </script>
 
-<div class="flex rounded-xl bg-surface overflow-hidden">
-	<div class="w-[3px] shrink-0 {barColor}"></div>
-	<div class="flex-1 px-4 py-3 flex items-center justify-between gap-3">
-		<div class="min-w-0">
-			<div class="text-sm font-medium text-foreground truncate">
-				{account.name}
+<div class="rounded-xl bg-surface overflow-hidden cursor-pointer" onclick={() => (expanded = !expanded)}>
+	<div class="flex">
+		<div class="w-[3px] shrink-0 {barColor}"></div>
+		<div class="flex-1 px-4 py-3 flex items-center justify-between gap-3">
+			<div class="min-w-0">
+				<div class="text-sm font-medium text-foreground truncate">
+					{account.name}
+				</div>
+				<div class="text-xs text-muted">{typeLabel}</div>
 			</div>
-			<div class="text-xs text-muted">{typeLabel}</div>
-		</div>
-		<div class="text-sm font-semibold shrink-0 {balanceColor}">
-			{formattedBalance}
+			<div class="text-sm font-semibold shrink-0 {balanceColor}">
+				{formattedBalance}
+			</div>
 		</div>
 	</div>
+	{#if expanded}
+		<div class="flex gap-2 px-4 pb-3">
+			<button
+				class="flex-1 rounded-lg bg-surface-raised px-3 py-2 text-sm text-foreground transition-colors hover:opacity-80"
+				onclick={(e) => { e.stopPropagation(); onedit(); }}
+			>
+				Editar
+			</button>
+			<button
+				class="flex-1 rounded-lg bg-expense/10 px-3 py-2 text-sm text-expense transition-colors hover:opacity-80 disabled:opacity-50"
+				onclick={(e) => { e.stopPropagation(); handleDelete(); }}
+				disabled={deleting}
+			>
+				{deleting ? "Eliminando..." : "Eliminar"}
+			</button>
+		</div>
+	{/if}
 </div>

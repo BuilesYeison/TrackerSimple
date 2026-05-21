@@ -27,6 +27,10 @@ export class AccountService {
 		await this.repo.update(account);
 	}
 
+	async delete(id: string): Promise<void> {
+		await this.repo.delete(id);
+	}
+
 	async getById(id: string): Promise<Account | null> {
 		return this.repo.findById(id);
 	}

@@ -6,4 +6,5 @@ export interface IAccountRepository {
 	findById(id: string): Promise<Account | null>;
 	findAll(): Promise<Account[]>;
 	findActive(): Promise<Account[]>;
+	delete(id: string): Promise<void>;
 }

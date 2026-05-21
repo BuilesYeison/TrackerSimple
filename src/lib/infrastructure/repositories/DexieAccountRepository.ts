@@ -25,4 +25,8 @@ export class DexieAccountRepository implements IAccountRepository {
 		const all = await this.findAll();
 		return all.filter((a) => a.isActive);
 	}
+
+	async delete(id: string): Promise<void> {
+		await this.db.accounts.delete(id);
+	}
 }

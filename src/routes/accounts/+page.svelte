@@ -2,6 +2,7 @@
 	import { onMount } from "svelte";
 	import { goto } from "$app/navigation";
 	import { Plus } from "@lucide/svelte";
+	import { toast } from "svelte-sonner";
 	import {
 		accountService,
 		recordService,
@@ -43,10 +44,35 @@
 		}
 		return balance;
 	}
+
+	function handleEdit(account: Account) {
+		goto(`/accounts/${account.id}/edit`);
+	}
+
+	async function handleDelete(account: Account) {
+		const records = await recordService.getByAccount(account.id);
+		if (records.length > 0) {
+			toast.error(
+				"No se puede eliminar: la cuenta tiene registros asociados",
+			);
+			return;
+		}
+		try {
+			await accountService.delete(account.id);
+			accounts = accounts.filter((a) => a.id !== account.id);
+			balances.delete(account.id);
+			balances = new Map(balances);
+			toast.success("Cuenta eliminada");
+		} catch (err) {
+			toast.error(
+				err instanceof Error ? err.message : "Error al eliminar",
+			);
+		}
+	}
 </script>
 
 <div class="flex flex-col h-full max-w-md mx-auto">
-	<div class="flex-1 overflow-y-auto flex flex-col gap-4">
+	<div class="flex-1 overflow-y-auto flex flex-col gap-4 records-list mt-3">
 		<h1 class="text-2xl font-bold">Cuentas</h1>
 
 		{#if loading}
@@ -66,6 +92,8 @@
 					<AccountCard
 						{account}
 						balance={balances.get(account.id) ?? account.balance}
+						onedit={() => handleEdit(account)}
+						ondelete={() => handleDelete(account)}
 					/>
 				{/each}
 			</div>

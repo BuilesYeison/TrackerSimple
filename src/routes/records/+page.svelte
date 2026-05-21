@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { onMount } from "svelte";
-	import { ChevronLeft, ChevronRight } from "@lucide/svelte";
+	import { ChevronLeft, ChevronRight, Plus } from "@lucide/svelte";
 	import {
 		accountService,
 		categoryService,
@@ -16,6 +16,7 @@
 	import type { Account } from "$lib/domain/entities";
 	import type { Category } from "$lib/domain/entities";
 	import type { Record } from "$lib/domain/entities";
+	import { goto } from "$app/navigation";
 
 	let filterType = $state<"all" | "expense" | "income" | "transfer">("all");
 	let currentDate = $state(new Date());
@@ -114,8 +115,8 @@
 	}
 </script>
 
-<div class="mx-auto flex max-w-md flex-col gap-4">
-	<div class="flex items-center justify-between">
+<div class="flex flex-col h-full max-w-md mx-auto">
+	<div class="flex items-center justify-between months-navigation">
 		<button
 			onclick={() => navigateMonth(-1)}
 			class="rounded-lg p-2 text-foreground hover:bg-surface-raised transition-colors"
@@ -135,7 +136,9 @@
 		{/if}
 	</div>
 
-	<div class="grid grid-cols-4 gap-2 rounded-xl bg-surface p-1">
+	<div
+		class="grid grid-cols-4 gap-2 rounded-xl bg-surface p-1 tabs-record-types-filter"
+	>
 		<button
 			class="rounded-xl py-2 text-sm font-medium transition-colors {filterType ===
 			'all'
@@ -166,41 +169,57 @@
 		>
 	</div>
 
-	{#if groupedRecords.length === 0}
-		<div class="flex flex-col items-center gap-2 py-12 text-muted">
-			<span class="text-4xl">📭</span>
-			<span>Sin registros este mes</span>
-		</div>
-	{:else}
-		{#each groupedRecords as { dateKey, records, subtotal }}
-			<div>
-				<div class="mb-1 text-xs font-medium text-muted">
-					{formatGroupDate(dateKey)}
-				</div>
-				<div class="divide-y divide-border">
-					{#each records as record (record.id)}
-						<RecordItem
-							{record}
-							accountName={lookupAccount(record.accountId)}
-							categoryName={record.type === "transfer"
-								? ""
-								: lookupCategory(record.categoryId)}
-							toAccountName={record.toAccountId
-								? lookupAccount(record.toAccountId)
-								: undefined}
-						/>
-					{/each}
-				</div>
-				<div
-					class="mt-1 text-right text-xs font-medium {subtotalColor(
-						subtotal,
-					)}"
-				>
-					Subtotal día: {subtotalSign(subtotal)}${Math.abs(
-						subtotal,
-					).toLocaleString("es")}
-				</div>
+	<div class="flex-1 overflow-y-auto flex flex-col gap-4 records-list mt-3">
+		{#if groupedRecords.length === 0}
+			<div class="flex flex-col items-center gap-2 py-12 text-muted">
+				<span class="text-4xl">📭</span>
+				<span>Sin registros este mes</span>
 			</div>
-		{/each}
-	{/if}
+		{:else}
+			{#each groupedRecords as { dateKey, records, subtotal }}
+				<div>
+					<div class="mb-1 text-xs font-medium text-muted">
+						{formatGroupDate(dateKey)}
+					</div>
+					<div class="divide-y divide-border">
+						{#each records as record (record.id)}
+							<RecordItem
+								{record}
+								accountName={lookupAccount(record.accountId)}
+								categoryName={record.type === "transfer"
+									? ""
+									: lookupCategory(record.categoryId)}
+								toAccountName={record.toAccountId
+									? lookupAccount(record.toAccountId)
+									: undefined}
+							/>
+						{/each}
+					</div>
+					<div
+						class="mt-1 text-right text-xs font-medium {subtotalColor(
+							subtotal,
+						)}"
+					>
+						Subtotal día: {subtotalSign(subtotal)}${Math.abs(
+							subtotal,
+						).toLocaleString("es")}
+					</div>
+				</div>
+			{/each}
+		{/if}
+	</div>
+
+	<!-- botón fijo al fondo -->
+	<div
+		class="flex-shrink-0 px-4 py-3"
+		style="padding-bottom: calc(0.75rem + env(safe-area-inset-bottom))"
+	>
+		<button
+			onclick={() => goto("/records/new")}
+			class="flex w-full items-center justify-center gap-2 rounded-xl bg-primary px-4 py-3 text-sm font-medium text-primary-foreground transition-colors hover:opacity-90"
+		>
+			<Plus size={18} />
+			Crear registro
+		</button>
+	</div>
 </div>

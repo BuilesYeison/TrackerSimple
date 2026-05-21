@@ -1,9 +1,9 @@
 <script lang="ts">
-	import { goto } from "$app/navigation";
 	import { ArrowLeft } from "@lucide/svelte";
+	import AccountForm from "$lib/presentation/components/AccountForm.svelte";
 </script>
 
-<div class="mx-auto flex max-w-md flex-col gap-4 p-4">
+<div class="mx-auto flex max-w-md flex-col gap-6">
 	<header class="flex items-center gap-3">
 		<button
 			onclick={() => history.back()}
@@ -14,8 +14,5 @@
 		</button>
 		<h1 class="text-2xl font-bold">Crear cuenta</h1>
 	</header>
-	<div class="flex flex-col items-center gap-2 py-12 text-muted">
-		<span class="text-4xl">🚧</span>
-		<span>Próximamente</span>
-	</div>
+	<AccountForm mode="create" />
 </div>

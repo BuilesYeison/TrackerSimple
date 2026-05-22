@@ -9,6 +9,10 @@ export class DexieRecordRepository implements IRecordRepository {
 		await this.db.records.add(record);
 	}
 
+	async update(record: Record): Promise<void> {
+		await this.db.records.put(record);
+	}
+
 	async findById(id: string): Promise<Record | null> {
 		return (await this.db.records.get(id)) ?? null;
 	}

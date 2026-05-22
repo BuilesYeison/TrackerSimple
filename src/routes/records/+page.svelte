@@ -1,6 +1,8 @@
 <script lang="ts">
 	import { onMount } from "svelte";
+	import { goto } from "$app/navigation";
 	import { ChevronLeft, ChevronRight, Inbox, Plus } from "@lucide/svelte";
+	import { toast } from "svelte-sonner";
 	import {
 		accountService,
 		categoryService,
@@ -16,7 +18,6 @@
 	import type { Account } from "$lib/domain/entities";
 	import type { Category } from "$lib/domain/entities";
 	import type { Record } from "$lib/domain/entities";
-	import { goto } from "$app/navigation";
 
 	let filterType = $state<"all" | "expense" | "income" | "transfer">("all");
 	let currentDate = $state(new Date());
@@ -66,6 +67,27 @@
 
 	function lookupCategory(id: string): string {
 		return categories.find((c) => c.id === id)?.name ?? "—";
+	}
+
+	function handleEdit(record: Record) {
+		goto(`/records/${record.id}/edit`);
+	}
+
+	async function handleDelete(record: Record) {
+		try {
+			await recordService.delete(record.id);
+			const key = monthKey;
+			const records = (cache.get(key) ?? []).filter(
+				(r) => r.id !== record.id,
+			);
+			cache.set(key, records);
+			cache = new Map(cache);
+			toast.success("Registro eliminado");
+		} catch (err) {
+			toast.error(
+				err instanceof Error ? err.message : "Error al eliminar",
+			);
+		}
 	}
 
 	const monthKey = $derived(
@@ -192,6 +214,8 @@
 								toAccountName={record.toAccountId
 									? lookupAccount(record.toAccountId)
 									: undefined}
+								onedit={() => handleEdit(record)}
+								ondelete={() => handleDelete(record)}
 							/>
 						{/each}
 					</div>

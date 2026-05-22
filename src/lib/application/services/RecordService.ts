@@ -23,6 +23,11 @@ export class RecordService {
 		return record;
 	}
 
+	async update(record: Record): Promise<void> {
+		record.updatedAt = new Date();
+		await this.repo.update({ ...record });
+	}
+
 	async getByAccount(accountId: string): Promise<Record[]> {
 		return this.repo.findByAccount(accountId);
 	}
@@ -42,5 +47,9 @@ export class RecordService {
 
 	async delete(id: string): Promise<void> {
 		await this.repo.delete(id);
+	}
+
+	async getById(id: string): Promise<Record | null> {
+		return this.repo.findById(id);
 	}
 }

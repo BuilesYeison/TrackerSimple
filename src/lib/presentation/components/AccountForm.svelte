@@ -7,9 +7,11 @@
 	let {
 		mode,
 		account = null,
+		onsuccess = undefined,
 	}: {
 		mode: "create" | "edit";
 		account?: Account | null;
+		onsuccess?: () => void;
 	} = $props();
 
 	let name = $state(account?.name ?? "");
@@ -46,7 +48,11 @@
 				});
 				toast.success("Cuenta creada");
 			}
-			setTimeout(() => goto("/accounts"), 500);
+			if (onsuccess) {
+				onsuccess();
+			} else {
+				setTimeout(() => goto("/accounts"), 500);
+			}
 		} catch (err) {
 			toast.error(
 				err instanceof Error ? err.message : "Error al guardar la cuenta",

@@ -10,6 +10,25 @@ export class SettingsService {
 	}
 
 	async setCurrency(currency: Currency): Promise<void> {
-		await this.repo.save({ key: 'default', currency });
+		const settings = await this.repo.get();
+		await this.repo.save({
+			key: 'default',
+			currency,
+			onboardingCompleted: settings?.onboardingCompleted ?? false,
+		});
+	}
+
+	async isOnboardingCompleted(): Promise<boolean> {
+		const settings = await this.repo.get();
+		return settings?.onboardingCompleted ?? false;
+	}
+
+	async completeOnboarding(): Promise<void> {
+		const settings = await this.repo.get();
+		await this.repo.save({
+			key: 'default',
+			currency: settings?.currency ?? 'COP',
+			onboardingCompleted: true,
+		});
 	}
 }

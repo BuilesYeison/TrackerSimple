@@ -2,7 +2,9 @@
 	import "../app.css";
 	import favicon from "$lib/assets/favicon.svg";
 	import { onMount } from "svelte";
-	import { initWorkspace } from "$lib/presentation/stores/workspace";
+	import { page } from "$app/stores";
+	import { goto } from "$app/navigation";
+	import { initWorkspace, settingsService } from "$lib/presentation/stores/workspace";
 	import Sidebar from "$lib/presentation/components/Sidebar.svelte";
 	import { Toaster } from "$lib/components/ui/sonner/index.js";
 
@@ -10,9 +12,17 @@
 
 	let updateAvailable = $state(false);
 	let offlineReady = $state(false);
+	let checkingOnboarding = $state(true);
 
 	onMount(async () => {
 		await initWorkspace();
+
+		const completed = await settingsService.isOnboardingCompleted();
+		checkingOnboarding = false;
+		if (!completed && $page.url.pathname !== "/onboarding") {
+			goto("/onboarding");
+			return;
+		}
 
 		const { registerSW } = await import("virtual:pwa-register");
 		registerSW({
@@ -56,5 +66,7 @@
 		<Toaster />
 		{@render children()}
 	</main>
-	<Sidebar />
+	{#if !$page.url.pathname.startsWith("/onboarding")}
+		<Sidebar />
+	{/if}
 </div>

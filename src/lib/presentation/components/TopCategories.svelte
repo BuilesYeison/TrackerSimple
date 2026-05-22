@@ -13,7 +13,7 @@
 
 {#if categories.length > 0}
 	<div class="flex flex-col gap-3">
-		<h2 class="text-sm font-medium text-foreground">En qué gastaste más</h2>
+		<h2 class="text-sm font-medium text-foreground">En qué gastaste más este mes</h2>
 		{#each categories as { name, amount, maxAmount }}
 			<div class="flex items-center gap-3">
 				<span class="w-24 text-sm text-muted truncate">{name}</span>

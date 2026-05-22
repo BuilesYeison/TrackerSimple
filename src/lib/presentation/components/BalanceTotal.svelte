@@ -2,11 +2,9 @@
 	let {
 		balance,
 		currency,
-		monthLabel,
 	}: {
 		balance: number;
 		currency: string;
-		monthLabel: string;
 	} = $props();
 
 	const sign = $derived(balance >= 0 ? "+" : "-");
@@ -20,5 +18,5 @@
 
 <div class="text-center py-6">
 	<div class="text-5xl font-light {balanceColor}">{display}</div>
-	<div class="mt-1 text-xs text-muted">balance total · {monthLabel}</div>
+	<div class="mt-1 text-xs text-muted">balance total</div>
 </div>

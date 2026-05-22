@@ -24,6 +24,7 @@
 	let monthRecords: Record[] = $state([]);
 	let balances = $state(new Map<string, number>());
 	let currency = $state("COP");
+	let recentRecords = $state<Record[]>([]);
 	let loading = $state(true);
 
 	const today = new Date();
@@ -45,6 +46,7 @@
 			balanceMap.set(acc.id, await calcBalance(acc, recordService));
 		}
 		balances = balanceMap;
+		recentRecords = await recordService.getRecent(5);
 		loading = false;
 	});
 
@@ -84,12 +86,6 @@
 			.slice(0, 3);
 	});
 
-	const recentRecords = $derived(
-		[...monthRecords]
-			.sort((a, b) => b.date.getTime() - a.date.getTime())
-			.slice(0, 5),
-	);
-
 	function lookupAccount(id: string): string {
 		return accounts.find((a) => a.id === id)?.name ?? "—";
 	}
@@ -101,13 +97,13 @@
 
 <div class="flex flex-col h-full max-w-md mx-auto">
 	<div class="flex-1 overflow-y-auto flex flex-col gap-6">
-		<BalanceTotal
-			balance={totalBalance}
-			{currency}
-			monthLabel={formatMonthLabel(today)}
-		/>
+		<BalanceTotal balance={totalBalance} {currency} />
 
-		<MonthSummary income={monthIncome} expense={monthExpense} />
+		<MonthSummary
+			income={monthIncome}
+			expense={monthExpense}
+			period={formatMonthLabel(today)}
+		/>
 
 		<TopCategories categories={topCategories} />
 

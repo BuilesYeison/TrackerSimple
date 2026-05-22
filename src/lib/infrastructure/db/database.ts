@@ -1,10 +1,11 @@
 import Dexie, { type EntityTable } from 'dexie';
-import type { Account, Category, Record } from '../../domain/entities';
+import type { Account, AppSettings, Category, Record } from '../../domain/entities';
 
 export class AppDatabase extends Dexie {
 	accounts!: EntityTable<Account, 'id'>;
 	categories!: EntityTable<Category, 'id'>;
 	records!: EntityTable<Record, 'id'>;
+	settings!: EntityTable<AppSettings, 'key'>;
 
 	constructor() {
 		super('PersonalFinAppV2');
@@ -12,6 +13,9 @@ export class AppDatabase extends Dexie {
 			accounts: 'id, name, type, currency',
 			categories: 'id, &name, type',
 			records: 'id, type, accountId, toAccountId, categoryId, date'
+		});
+		this.version(3).stores({
+			settings: 'key'
 		});
 	}
 }

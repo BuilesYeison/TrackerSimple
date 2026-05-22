@@ -1,8 +1,8 @@
 <script lang="ts">
 	import { goto } from "$app/navigation";
 	import { toast } from "svelte-sonner";
-	import { accountService } from "$lib/presentation/stores/workspace";
-	import type { Account, AccountType, Currency } from "$lib/domain/entities";
+	import { accountService, settingsService } from "$lib/presentation/stores/workspace";
+	import type { Account, AccountType } from "$lib/domain/entities";
 
 	let {
 		mode,
@@ -14,13 +14,8 @@
 
 	let name = $state(account?.name ?? "");
 	let type = $state<AccountType>(account?.type ?? "cash");
-	let currency = $state<Currency>(account?.currency ?? "COP");
 	let balance = $state(account?.balance ?? 0);
 	let saving = $state(false);
-
-	const typeLabel = $derived(
-		type === "cash" ? "Efectivo" : type === "debit" ? "Débito" : "Crédito",
-	);
 
 	const isEdit = $derived(mode === "edit");
 
@@ -42,6 +37,7 @@
 				await accountService.update(account);
 				toast.success("Cuenta actualizada");
 			} else {
+				const currency = await settingsService.getCurrency();
 				await accountService.create({
 					name: name.trim(),
 					type,
@@ -89,23 +85,6 @@
 			<option value="cash">Efectivo</option>
 			<option value="debit">Débito</option>
 			<option value="credit">Crédito</option>
-		</select>
-	</label>
-
-	<label class="flex flex-col gap-1 text-xs font-medium text-muted">
-		<span>Moneda</span>
-		<select
-			bind:value={currency}
-			disabled={isEdit}
-			class="rounded-lg border border-border bg-background px-3 py-2 w-full text-sm text-foreground disabled:opacity-50"
-		>
-			<option value="COP">COP — Peso colombiano</option>
-			<option value="USD">USD — Dólar estadounidense</option>
-			<option value="EUR">EUR — Euro</option>
-			<option value="ARS">ARS — Peso argentino</option>
-			<option value="MXN">MXN — Peso mexicano</option>
-			<option value="CLP">CLP — Peso chileno</option>
-			<option value="PEN">PEN — Sol peruano</option>
 		</select>
 	</label>
 

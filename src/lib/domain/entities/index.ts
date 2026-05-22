@@ -7,3 +7,4 @@ export type { Record } from './Record';
 export { createRecord } from './Record';
 export { DEFAULT_CATEGORIES } from './default-categories';
 export type { DefaultCategoryDef } from './default-categories';
+export type { AppSettings } from './AppSettings';

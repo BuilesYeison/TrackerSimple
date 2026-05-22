@@ -2,6 +2,7 @@
 	import type { Record } from "$lib/domain/entities";
 	import { getCategoryIcon } from "$lib/category-icons";
 	import { ArrowLeftRight } from "@lucide/svelte";
+	import * as AlertDialog from "$lib/components/ui/alert-dialog/index.js";
 
 	let {
 		record,
@@ -21,6 +22,7 @@
 
 	let expanded = $state(false);
 	let deleting = $state(false);
+	let confirmOpen = $state(false);
 
 	const Icon = $derived(
 		record.type === "transfer"
@@ -49,8 +51,7 @@
 
 	const hasActions = $derived(onedit || ondelete);
 
-	async function handleDelete(e: Event) {
-		e.stopPropagation();
+	async function handleDelete() {
 		if (!ondelete) return;
 		deleting = true;
 		try {
@@ -58,6 +59,7 @@
 		} finally {
 			deleting = false;
 			expanded = false;
+			confirmOpen = false;
 		}
 	}
 </script>
@@ -85,7 +87,10 @@
 			{#if onedit}
 				<button
 					class="flex-1 rounded-lg bg-surface-raised px-3 py-2 text-sm text-foreground transition-colors hover:opacity-80"
-					onclick={(e) => { e.stopPropagation(); onedit(); }}
+					onclick={(e) => {
+						e.stopPropagation();
+						onedit();
+					}}
 				>
 					Editar
 				</button>
@@ -93,11 +98,34 @@
 			{#if ondelete}
 				<button
 					class="flex-1 rounded-lg bg-expense/10 px-3 py-2 text-sm text-expense transition-colors hover:opacity-80 disabled:opacity-50"
-					onclick={handleDelete}
+					onclick={(e) => {
+						e.stopPropagation();
+						confirmOpen = true;
+					}}
 					disabled={deleting}
 				>
 					{deleting ? "Eliminando..." : "Eliminar"}
 				</button>
+
+				<AlertDialog.Root bind:open={confirmOpen}>
+					<AlertDialog.Content>
+						<AlertDialog.Header>
+							<AlertDialog.Title
+								>¿Eliminar registro?</AlertDialog.Title
+							>
+							<AlertDialog.Description>
+								Esta acción no se puede deshacer. El registro se
+								eliminará permanentemente.
+							</AlertDialog.Description>
+						</AlertDialog.Header>
+						<AlertDialog.Footer>
+							<AlertDialog.Cancel>Cancelar</AlertDialog.Cancel>
+							<AlertDialog.Action onclick={handleDelete}
+								>Eliminar</AlertDialog.Action
+							>
+						</AlertDialog.Footer>
+					</AlertDialog.Content>
+				</AlertDialog.Root>
 			{/if}
 		</div>
 	{/if}

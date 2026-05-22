@@ -8,6 +8,7 @@
 		recordService,
 		workspaceReady,
 	} from "$lib/presentation/stores/workspace";
+	import { calcBalance } from "$lib/utils/balance";
 	import AccountCard from "$lib/presentation/components/AccountCard.svelte";
 	import type { Account } from "$lib/domain/entities";
 
@@ -20,7 +21,7 @@
 		const activeAccounts = await accountService.getActive();
 		const balanceMap = new Map<string, number>();
 		const promises = activeAccounts.map(async (acc) => {
-			const b = await calcBalance(acc);
+			const b = await calcBalance(acc, recordService);
 			balanceMap.set(acc.id, b);
 		});
 		await Promise.all(promises);
@@ -28,22 +29,6 @@
 		balances = balanceMap;
 		loading = false;
 	});
-
-	async function calcBalance(account: Account): Promise<number> {
-		const records = await recordService.getByAccount(account.id);
-		let balance = account.balance;
-		for (const r of records) {
-			if (r.type === "income" && r.accountId === account.id)
-				balance += r.amount;
-			if (r.type === "expense" && r.accountId === account.id)
-				balance -= r.amount;
-			if (r.type === "transfer" && r.accountId === account.id)
-				balance -= r.amount;
-			if (r.type === "transfer" && r.toAccountId === account.id)
-				balance += r.amount;
-		}
-		return balance;
-	}
 
 	function handleEdit(account: Account) {
 		goto(`/accounts/${account.id}/edit`);

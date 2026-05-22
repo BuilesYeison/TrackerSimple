@@ -73,7 +73,7 @@
 				date,
 			});
 			toast.success("Registro guardado");
-			setTimeout(() => goto("/records"), 600);
+			setTimeout(() => goto("/dashboard"), 600);
 		} catch (err) {
 			toast.error(err instanceof Error ? err.message : "Algo salió mal");
 		} finally {

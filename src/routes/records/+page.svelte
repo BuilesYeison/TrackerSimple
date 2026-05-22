@@ -111,7 +111,7 @@
 	}
 
 	function subtotalSign(subtotal: number): string {
-		return subtotal >= 0 ? "+" : "";
+		return subtotal >= 0 ? "+" : "-";
 	}
 </script>
 

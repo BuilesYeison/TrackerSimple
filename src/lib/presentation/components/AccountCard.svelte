@@ -32,7 +32,7 @@
 				: "Crédito",
 	);
 
-	const balanceSign = $derived(balance >= 0 ? "+" : "");
+	const balanceSign = $derived(balance >= 0 ? "+" : "-");
 	const balanceColor = $derived(
 		balance >= 0 ? "text-income" : "text-expense",
 	);

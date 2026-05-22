@@ -1,6 +1,7 @@
 <script lang="ts">
 	import type { Record } from "$lib/domain/entities";
-	import { getCategoryEmoji } from "$lib/category-icons";
+	import { getCategoryIcon } from "$lib/category-icons";
+	import { ArrowLeftRight } from "@lucide/svelte";
 
 	let {
 		record,
@@ -14,8 +15,10 @@
 		toAccountName?: string;
 	} = $props();
 
-	const emoji = $derived(
-		record.type === "transfer" ? "🔄" : getCategoryEmoji(categoryName),
+	const Icon = $derived(
+		record.type === "transfer"
+			? ArrowLeftRight
+			: getCategoryIcon(categoryName),
 	);
 	const displayCategory = $derived(
 		record.type === "transfer" ? "Transferencia" : categoryName,
@@ -39,7 +42,7 @@
 </script>
 
 <div class="flex items-center gap-3 py-2">
-	<span class="text-xl">{emoji}</span>
+	<Icon class="size-5 text-muted shrink-0" />
 	<div class="flex-1 min-w-0">
 		<div class="text-sm font-medium truncate">{displayCategory}</div>
 		<div class="text-xs text-muted truncate">

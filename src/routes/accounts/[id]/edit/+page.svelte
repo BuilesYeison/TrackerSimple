@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { page } from "$app/stores";
 	import { onMount } from "svelte";
-	import { ArrowLeft } from "@lucide/svelte";
+	import { ArrowLeft, SearchX } from "@lucide/svelte";
 	import {
 		accountService,
 		workspaceReady,
@@ -35,7 +35,7 @@
 		<div class="h-40 animate-pulse rounded-xl bg-surface"></div>
 	{:else if !account}
 		<div class="flex flex-col items-center gap-2 py-12 text-muted">
-			<span class="text-4xl">🔍</span>
+			<SearchX class="size-10 text-muted" />
 			<span>Cuenta no encontrada</span>
 		</div>
 	{:else}

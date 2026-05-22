@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { onMount } from "svelte";
 	import { goto } from "$app/navigation";
-	import { Plus } from "@lucide/svelte";
+	import { Plus, WalletCards } from "@lucide/svelte";
 	import { toast } from "svelte-sonner";
 	import {
 		accountService,
@@ -83,7 +83,7 @@
 			</div>
 		{:else if accounts.length === 0}
 			<div class="flex flex-col items-center gap-2 py-12 text-muted">
-				<span class="text-4xl">💳</span>
+				<WalletCards class="size-10 text-muted" />
 				<span>Sin cuentas creadas</span>
 			</div>
 		{:else}

@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { onMount } from "svelte";
-	import { ChevronLeft, ChevronRight, Plus } from "@lucide/svelte";
+	import { ChevronLeft, ChevronRight, Inbox, Plus } from "@lucide/svelte";
 	import {
 		accountService,
 		categoryService,
@@ -172,7 +172,7 @@
 	<div class="flex-1 overflow-y-auto flex flex-col gap-4 records-list mt-3">
 		{#if groupedRecords.length === 0}
 			<div class="flex flex-col items-center gap-2 py-12 text-muted">
-				<span class="text-4xl">📭</span>
+				<Inbox class="size-10 text-muted" />
 				<span>Sin registros este mes</span>
 			</div>
 		{:else}

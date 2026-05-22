@@ -7,6 +7,7 @@
 		accountService,
 		recordService,
 		workspaceReady,
+		snapshotService,
 	} from "$lib/presentation/stores/workspace";
 	import { calcBalance } from "$lib/utils/balance";
 	import AccountCard from "$lib/presentation/components/AccountCard.svelte";
@@ -48,6 +49,7 @@
 			balances.delete(account.id);
 			balances = new Map(balances);
 			toast.success("Cuenta eliminada");
+			snapshotService.createSnapshot();
 		} catch (err) {
 			toast.error(
 				err instanceof Error ? err.message : "Error al eliminar",

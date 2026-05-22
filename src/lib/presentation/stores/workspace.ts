@@ -1,6 +1,7 @@
 import { getDb, seedDefaultCategories } from '../../infrastructure/db';
 import { DexieAccountRepository, DexieCategoryRepository, DexieRecordRepository, DexieAppSettingsRepository } from '../../infrastructure/repositories';
 import { AccountService, CategoryService, RecordService, SettingsService } from '../../application/services';
+import { SnapshotService } from '../../application/services/SnapshotService';
 
 const db = getDb();
 
@@ -13,6 +14,7 @@ export const accountService = new AccountService(accountRepo);
 export const categoryService = new CategoryService(categoryRepo);
 export const recordService = new RecordService(recordRepo);
 export const settingsService = new SettingsService(settingsRepo);
+export const snapshotService = new SnapshotService();
 
 let ready = false;
 let resolveReady: () => void;

@@ -15,6 +15,7 @@
 		categoryService,
 		recordService,
 		workspaceReady,
+		snapshotService,
 	} from "$lib/presentation/stores/workspace";
 	import type { Account, Category, Record } from "$lib/domain/entities";
 
@@ -109,6 +110,7 @@
 				});
 				toast.success("Registro guardado");
 			}
+			snapshotService.createSnapshot();
 			setTimeout(() => goto("/dashboard"), 600);
 		} catch (err) {
 			toast.error(err instanceof Error ? err.message : "Algo salió mal");

@@ -4,9 +4,10 @@
 	import { onMount } from "svelte";
 	import { page } from "$app/stores";
 	import { goto } from "$app/navigation";
-	import { initWorkspace, settingsService } from "$lib/presentation/stores/workspace";
+	import { initWorkspace, settingsService, snapshotService, categoryService } from "$lib/presentation/stores/workspace";
 	import Sidebar from "$lib/presentation/components/Sidebar.svelte";
 	import { Toaster } from "$lib/components/ui/sonner/index.js";
+	import { toast } from "svelte-sonner";
 
 	let { children } = $props();
 
@@ -16,6 +17,16 @@
 
 	onMount(async () => {
 		await initWorkspace();
+
+		const cats = await categoryService.getAll();
+		if (cats.length === 0) {
+			const restored = await snapshotService.restoreFromOPFS();
+			if (restored) {
+				toast.success("Datos restaurados desde backup local");
+				window.location.reload();
+				return;
+			}
+		}
 
 		const completed = await settingsService.isOnboardingCompleted();
 		checkingOnboarding = false;

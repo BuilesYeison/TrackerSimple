@@ -1,16 +1,22 @@
 import type { Category } from '../../domain/entities';
 import type { ICategoryRepository } from '../../domain/repositories';
 import type { AppDatabase } from '../db';
+import type { JsonFileStore } from '../storage/json-store';
 
 export class DexieCategoryRepository implements ICategoryRepository {
-	constructor(private db: AppDatabase) {}
+	constructor(
+		private db: AppDatabase,
+		private jsonStore: JsonFileStore,
+	) {}
 
 	async create(category: Category): Promise<void> {
 		await this.db.categories.add(category);
+		await this.syncToFile();
 	}
 
 	async update(category: Category): Promise<void> {
 		await this.db.categories.put(category);
+		await this.syncToFile();
 	}
 
 	async findById(id: string): Promise<Category | null> {
@@ -28,5 +34,10 @@ export class DexieCategoryRepository implements ICategoryRepository {
 
 	async findByName(name: string): Promise<Category | null> {
 		return (await this.db.categories.where('name').equals(name).first()) ?? null;
+	}
+
+	private async syncToFile(): Promise<void> {
+		const all = await this.db.categories.toArray();
+		await this.jsonStore.saveCategories(all);
 	}
 }

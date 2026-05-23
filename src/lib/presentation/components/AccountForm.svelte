@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { goto } from "$app/navigation";
 	import { toast } from "svelte-sonner";
-	import { accountService, settingsService, snapshotService } from "$lib/presentation/stores/workspace";
+	import { accountService, settingsService } from "$lib/presentation/stores/workspace";
 	import type { Account, AccountType } from "$lib/domain/entities";
 
 	let {
@@ -48,7 +48,6 @@
 				});
 				toast.success("Cuenta creada");
 			}
-			snapshotService.createSnapshot();
 			if (onsuccess) {
 				onsuccess();
 			} else {

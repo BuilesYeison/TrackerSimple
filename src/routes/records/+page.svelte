@@ -8,7 +8,6 @@
 		categoryService,
 		recordService,
 		workspaceReady,
-		snapshotService,
 	} from "$lib/presentation/stores/workspace";
 	import {
 		formatGroupDate,
@@ -84,7 +83,6 @@
 			cache.set(key, records);
 			cache = new Map(cache);
 			toast.success("Registro eliminado");
-			snapshotService.createSnapshot();
 		} catch (err) {
 			toast.error(
 				err instanceof Error ? err.message : "Error al eliminar",

@@ -1,20 +1,22 @@
-import { getDb, seedDefaultCategories } from '../../infrastructure/db';
+import { getDb } from '../../infrastructure/db';
+import { JsonFileStore } from '../../infrastructure/storage/json-store';
+import { syncFileToDexie } from '../../infrastructure/storage/sync-engine';
 import { DexieAccountRepository, DexieCategoryRepository, DexieRecordRepository, DexieAppSettingsRepository } from '../../infrastructure/repositories';
 import { AccountService, CategoryService, RecordService, SettingsService } from '../../application/services';
-import { SnapshotService } from '../../application/services/SnapshotService';
+import { createCategory, DEFAULT_CATEGORIES } from '../../domain/entities';
 
 const db = getDb();
+const jsonStore = new JsonFileStore();
 
-const accountRepo = new DexieAccountRepository(db);
-const categoryRepo = new DexieCategoryRepository(db);
-const recordRepo = new DexieRecordRepository(db);
-const settingsRepo = new DexieAppSettingsRepository(db);
+const accountRepo = new DexieAccountRepository(db, jsonStore);
+const categoryRepo = new DexieCategoryRepository(db, jsonStore);
+const recordRepo = new DexieRecordRepository(db, jsonStore);
+const settingsRepo = new DexieAppSettingsRepository(db, jsonStore);
 
 export const accountService = new AccountService(accountRepo);
 export const categoryService = new CategoryService(categoryRepo);
 export const recordService = new RecordService(recordRepo);
 export const settingsService = new SettingsService(settingsRepo);
-export const snapshotService = new SnapshotService();
 
 let ready = false;
 let resolveReady: () => void;
@@ -24,17 +26,21 @@ export const workspaceReady = new Promise<void>((r) => {
 
 export async function initWorkspace(): Promise<void> {
 	if (ready) return;
-	await seedDefaultCategories(db);
-	await seedDefaultSettings(db);
+
+	await syncFileToDexie();
+
+	const cats = await categoryRepo.findAll();
+	if (cats.length === 0) {
+		const categories = DEFAULT_CATEGORIES.map((def) =>
+			createCategory({ name: def.name, type: def.type, isDefault: true }),
+		);
+		for (const cat of categories) {
+			await categoryRepo.create(cat);
+		}
+	}
+
 	ready = true;
 	resolveReady();
-}
-
-async function seedDefaultSettings(db: AppDatabase): Promise<void> {
-	const existing = await db.settings.get('default');
-	if (!existing) {
-		await db.settings.put({ key: 'default', currency: 'COP' });
-	}
 }
 
 export function isReady(): boolean {

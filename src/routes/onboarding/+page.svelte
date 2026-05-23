@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { goto } from "$app/navigation";
 	import { toast } from "svelte-sonner";
+	import { Folder } from "@lucide/svelte";
 	import { settingsService } from "$lib/presentation/stores/workspace";
 	import AccountForm from "$lib/presentation/components/AccountForm.svelte";
 	import type { Currency } from "$lib/domain/entities";
@@ -27,16 +28,14 @@
 			await settingsService.setCurrency(currency);
 			step = 4;
 		} catch (err) {
-			toast.error(
-				err instanceof Error ? err.message : "Error al guardar",
-			);
+			toast.error(err instanceof Error ? err.message : "Error al guardar");
 		} finally {
 			saving = false;
 		}
 	}
 
 	function onAccountCreated() {
-		step = 3;
+		step = 5;
 	}
 
 	async function finishOnboarding() {
@@ -45,9 +44,7 @@
 			await settingsService.completeOnboarding();
 			goto("/dashboard");
 		} catch (err) {
-			toast.error(
-				err instanceof Error ? err.message : "Error al finalizar",
-			);
+			toast.error(err instanceof Error ? err.message : "Error al finalizar");
 		} finally {
 			saving = false;
 		}
@@ -59,19 +56,13 @@
 		{#if step === 1}
 			<div class="flex flex-col gap-6 text-center">
 				<div>
-					<h1 class="text-2xl font-bold">
-						Tus finanzas, simples y privadas
-					</h1>
+					<h1 class="text-2xl font-bold">Tus finanzas, simples y privadas</h1>
 					<p class="mt-3 text-sm text-muted leading-relaxed">
-						Registra gastos, ingresos y transferencias en segundos.
-						Todo queda en tu dispositivo — sin cuentas, sin
-						servidores, sin complicaciones.
+						Registrá gastos, ingresos y transferencias en segundos. Todo queda en tu dispositivo — sin cuentas, sin servidores, sin complicaciones.
 					</p>
 				</div>
 				<button
-					onclick={() => {
-						step = 2;
-					}}
+					onclick={() => { step = 2; }}
 					class="w-full rounded-xl bg-primary px-4 py-3 text-sm font-medium text-primary-foreground transition-colors hover:opacity-90"
 				>
 					Comenzar
@@ -80,10 +71,27 @@
 		{:else if step === 2}
 			<div class="flex flex-col gap-6 text-center">
 				<div>
-					<h1 class="text-2xl font-bold">¿Qué moneda usas?</h1>
-					<p class="mt-2 text-sm text-muted">
-						Selecciona la moneda principal para tus cuentas
+					<h1 class="text-2xl font-bold">¿Dónde guardar tus datos?</h1>
+					<p class="mt-3 text-sm text-muted leading-relaxed">
+						Tus finanzas se guardan como archivos JSON en tu dispositivo. Podés abrirlos con cualquier editor, copiarlos o moverlos.
 					</p>
+				</div>
+				<div class="flex flex-col items-center gap-2 rounded-xl bg-surface p-4">
+					<Folder class="size-8 text-muted" />
+					<span class="text-sm text-muted">Documents / PersonalFinApp</span>
+				</div>
+				<button
+					onclick={() => { step = 3; }}
+					class="w-full rounded-xl bg-primary px-4 py-3 text-sm font-medium text-primary-foreground transition-colors hover:opacity-90"
+				>
+					Usar ubicación por defecto
+				</button>
+			</div>
+		{:else if step === 3}
+			<div class="flex flex-col gap-6 text-center">
+				<div>
+					<h1 class="text-2xl font-bold">¿Qué moneda usás?</h1>
+					<p class="mt-2 text-sm text-muted">Seleccioná la moneda principal para tus cuentas</p>
 				</div>
 				<select
 					bind:value={currency}
@@ -105,13 +113,11 @@
 					{saving ? "Guardando..." : "Siguiente"}
 				</button>
 			</div>
-		{:else if step === 3}
+		{:else if step === 4}
 			<div class="flex flex-col gap-4">
 				<div class="text-center">
-					<h1 class="text-2xl font-bold">Crea tu primera cuenta</h1>
-					<p class="mt-2 text-sm text-muted">
-						Necesitas al menos una cuenta para empezar
-					</p>
+					<h1 class="text-2xl font-bold">Creá tu primera cuenta</h1>
+					<p class="mt-2 text-sm text-muted">Necesitás al menos una cuenta para empezar</p>
 				</div>
 				<AccountForm mode="create" onsuccess={onAccountCreated} />
 			</div>

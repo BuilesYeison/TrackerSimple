@@ -1,4 +1,4 @@
-import { Filesystem, Directory } from '@capacitor/filesystem';
+import { Filesystem, Directory, Encoding } from '@capacitor/filesystem';
 
 const BASE_DIR = 'PersonalFinApp';
 
@@ -21,6 +21,7 @@ export async function readJSON<T>(path: string): Promise<T | null> {
 		const result = await Filesystem.readFile({
 			path: `${BASE_DIR}/${path}`,
 			directory: Directory.Documents,
+			encoding: Encoding.UTF8,
 		});
 		return JSON.parse(result.data as string) as T;
 	} catch {
@@ -31,11 +32,13 @@ export async function readJSON<T>(path: string): Promise<T | null> {
 export async function writeJSON(path: string, data: unknown): Promise<void> {
 	try {
 		const safe = sanitize(data);
+		console.log(safe)
 		await Filesystem.writeFile({
 			path: `${BASE_DIR}/${path}`,
 			data: JSON.stringify(safe, null, 2),
 			directory: Directory.Documents,
 			recursive: true,
+			encoding: Encoding.UTF8,
 		});
 	} catch (err) {
 		console.warn('writeJSON failed:', path, err);

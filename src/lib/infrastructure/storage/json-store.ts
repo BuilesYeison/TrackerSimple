@@ -6,6 +6,14 @@ function sanitize<T>(data: T): T {
 	return JSON.parse(JSON.stringify(data));
 }
 
+function extractDate(r: Record): Date {
+	if (r.date instanceof Date) return r.date;
+	if (typeof r.date === 'string') return new Date(r.date);
+	if (r.createdAt instanceof Date) return r.createdAt;
+	if (typeof r.createdAt === 'string') return new Date(r.createdAt);
+	return new Date();
+}
+
 export class JsonFileStore {
 	async loadAccounts(): Promise<Account[]> {
 		return (await readJSON<Account[]>('accounts.json')) ?? [];
@@ -45,7 +53,7 @@ export class JsonFileStore {
 		const safe = sanitize(records);
 		const recordsByMonth = new Map<string, Record[]>();
 		for (const r of safe) {
-			const d = r.date instanceof Date ? r.date : r.createdAt;
+			const d = extractDate(r);
 			const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
 			if (!recordsByMonth.has(key)) recordsByMonth.set(key, []);
 			recordsByMonth.get(key)!.push(r);

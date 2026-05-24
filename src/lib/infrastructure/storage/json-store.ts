@@ -2,13 +2,17 @@ import { readJSON, writeJSON, listDir, deleteFile } from './filesystem';
 import type { Account, Category, Record } from '../../domain/entities';
 import type { AppSettings } from '../../domain/entities/AppSettings';
 
+function sanitize<T>(data: T): T {
+	return JSON.parse(JSON.stringify(data));
+}
+
 export class JsonFileStore {
 	async loadAccounts(): Promise<Account[]> {
 		return (await readJSON<Account[]>('accounts.json')) ?? [];
 	}
 
 	async saveAccounts(data: Account[]): Promise<void> {
-		await writeJSON('accounts.json', data);
+		await writeJSON('accounts.json', sanitize(data));
 	}
 
 	async loadCategories(): Promise<Category[]> {
@@ -16,7 +20,7 @@ export class JsonFileStore {
 	}
 
 	async saveCategories(data: Category[]): Promise<void> {
-		await writeJSON('categories.json', data);
+		await writeJSON('categories.json', sanitize(data));
 	}
 
 	async loadSettings(): Promise<AppSettings | null> {
@@ -24,7 +28,7 @@ export class JsonFileStore {
 	}
 
 	async saveSettings(data: AppSettings): Promise<void> {
-		await writeJSON('settings.json', data);
+		await writeJSON('settings.json', sanitize(data));
 	}
 
 	async loadAllRecords(): Promise<Record[]> {
@@ -38,8 +42,9 @@ export class JsonFileStore {
 	}
 
 	async saveAllRecords(records: Record[]): Promise<void> {
+		const safe = sanitize(records);
 		const recordsByMonth = new Map<string, Record[]>();
-		for (const r of records) {
+		for (const r of safe) {
 			const d = r.date instanceof Date ? r.date : r.createdAt;
 			const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
 			if (!recordsByMonth.has(key)) recordsByMonth.set(key, []);

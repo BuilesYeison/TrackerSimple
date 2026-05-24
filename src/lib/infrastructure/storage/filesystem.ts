@@ -3,11 +3,20 @@ import { Filesystem, Directory } from '@capacitor/filesystem';
 const BASE_DIR = 'PersonalFinApp';
 
 export async function createWorkspace(): Promise<void> {
-	await Filesystem.mkdir({ path: BASE_DIR, directory: Directory.Documents, recursive: true });
-	await Filesystem.mkdir({ path: `${BASE_DIR}/records`, directory: Directory.Documents, recursive: true });
+	try {
+		await Filesystem.mkdir({ path: BASE_DIR, directory: Directory.Documents, recursive: true });
+		await Filesystem.mkdir({ path: `${BASE_DIR}/records`, directory: Directory.Documents, recursive: true });
+	} catch {
+		// Directory might already exist
+	}
+}
+
+function sanitize(data: unknown): unknown {
+	return JSON.parse(JSON.stringify(data));
 }
 
 export async function readJSON<T>(path: string): Promise<T | null> {
+	if (!path) return null;
 	try {
 		const result = await Filesystem.readFile({
 			path: `${BASE_DIR}/${path}`,
@@ -20,12 +29,17 @@ export async function readJSON<T>(path: string): Promise<T | null> {
 }
 
 export async function writeJSON(path: string, data: unknown): Promise<void> {
-	await Filesystem.writeFile({
-		path: `${BASE_DIR}/${path}`,
-		data: JSON.stringify(data, null, 2),
-		directory: Directory.Documents,
-		recursive: true,
-	});
+	try {
+		const safe = sanitize(data);
+		await Filesystem.writeFile({
+			path: `${BASE_DIR}/${path}`,
+			data: JSON.stringify(safe, null, 2),
+			directory: Directory.Documents,
+			recursive: true,
+		});
+	} catch (err) {
+		console.warn('writeJSON failed:', path, err);
+	}
 }
 
 export async function listDir(path: string): Promise<string[]> {

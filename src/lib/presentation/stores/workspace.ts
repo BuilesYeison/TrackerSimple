@@ -1,6 +1,7 @@
 import { getDb } from '../../infrastructure/db';
 import { JsonFileStore } from '../../infrastructure/storage/json-store';
 import { syncFileToDexie } from '../../infrastructure/storage/sync-engine';
+import { createWorkspace } from '../../infrastructure/storage/filesystem';
 import { DexieAccountRepository, DexieCategoryRepository, DexieRecordRepository, DexieAppSettingsRepository } from '../../infrastructure/repositories';
 import { AccountService, CategoryService, RecordService, SettingsService } from '../../application/services';
 import { createCategory, DEFAULT_CATEGORIES } from '../../domain/entities';
@@ -27,7 +28,12 @@ export const workspaceReady = new Promise<void>((r) => {
 export async function initWorkspace(): Promise<void> {
 	if (ready) return;
 
-	await syncFileToDexie();
+	try {
+		await syncFileToDexie();
+	} catch (err) {
+		console.warn('syncFileToDexie failed, starting fresh:', err);
+		try { await createWorkspace(); } catch { /* ignore */ }
+	}
 
 	const cats = await categoryRepo.findAll();
 	if (cats.length === 0) {

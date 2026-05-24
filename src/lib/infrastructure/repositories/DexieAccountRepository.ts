@@ -38,7 +38,11 @@ export class DexieAccountRepository implements IAccountRepository {
 	}
 
 	private async syncToFile(): Promise<void> {
-		const all = await this.db.accounts.toArray();
-		await this.jsonStore.saveAccounts(all);
+		try {
+			const all = await this.db.accounts.toArray();
+			await this.jsonStore.saveAccounts(all);
+		} catch (err) {
+			console.warn('syncToFile accounts failed:', err);
+		}
 	}
 }

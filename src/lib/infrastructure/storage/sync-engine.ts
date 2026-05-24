@@ -1,5 +1,5 @@
 import { getDb } from '../db/database';
-import { createWorkspace } from './filesystem';
+import { createWorkspace, deleteFile } from './filesystem';
 import { JsonFileStore } from './json-store';
 
 export async function syncFileToDexie(): Promise<void> {
@@ -8,15 +8,23 @@ export async function syncFileToDexie(): Promise<void> {
 
 	await createWorkspace();
 
-	const accounts = await store.loadAccounts();
-	const categories = await store.loadCategories();
+	let accounts = await store.loadAccounts();
+	let categories = await store.loadCategories();
 	const records = await store.loadAllRecords();
 	const settings = await store.loadSettings();
+
+	if (!Array.isArray(accounts)) {
+		await deleteFile('accounts.json');
+		accounts = [];
+	}
+	if (!Array.isArray(categories)) {
+		await deleteFile('categories.json');
+		categories = [];
+	}
 
 	await db.accounts.clear();
 	await db.categories.clear();
 	await db.records.clear();
-	await db.settings.clear();
 
 	if (accounts.length > 0) await db.accounts.bulkAdd(accounts as any[]);
 	if (categories.length > 0) await db.categories.bulkAdd(categories as any[]);

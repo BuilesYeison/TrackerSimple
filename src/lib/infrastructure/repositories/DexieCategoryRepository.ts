@@ -37,7 +37,11 @@ export class DexieCategoryRepository implements ICategoryRepository {
 	}
 
 	private async syncToFile(): Promise<void> {
-		const all = await this.db.categories.toArray();
-		await this.jsonStore.saveCategories(all);
+		try {
+			const all = await this.db.categories.toArray();
+			await this.jsonStore.saveCategories(all);
+		} catch (err) {
+			console.warn('syncToFile categories failed:', err);
+		}
 	}
 }

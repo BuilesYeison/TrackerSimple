@@ -15,6 +15,10 @@ export class DexieAppSettingsRepository implements IAppSettingsRepository {
 
 	async save(settings: AppSettings): Promise<void> {
 		await this.db.settings.put(settings);
-		await this.jsonStore.saveSettings(settings);
+		try {
+			await this.jsonStore.saveSettings(settings);
+		} catch (err) {
+			console.warn('saveSettings file failed:', err);
+		}
 	}
 }

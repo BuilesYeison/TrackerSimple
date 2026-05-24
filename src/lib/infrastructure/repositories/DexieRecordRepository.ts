@@ -50,7 +50,11 @@ export class DexieRecordRepository implements IRecordRepository {
 	}
 
 	private async syncToFile(): Promise<void> {
-		const all = await this.db.records.toArray();
-		await this.jsonStore.saveAllRecords(all);
+		try {
+			const all = await this.db.records.toArray();
+			await this.jsonStore.saveAllRecords(all);
+		} catch (err) {
+			console.warn('syncToFile records failed:', err);
+		}
 	}
 }

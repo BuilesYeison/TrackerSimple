@@ -6,6 +6,9 @@
 	"scripts": {
 		"dev": "vite dev",
 		"build": "vite build",
+		"build:sync": "vite build && npx cap sync",
+		"android": "npm run build:sync && npx cap open android",
+		"ios": "npm run build:sync && npx cap open ios",
 		"preview": "vite preview",
 		"prepare": "svelte-kit sync || echo ''",
 		"check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",

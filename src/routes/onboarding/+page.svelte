@@ -1,14 +1,34 @@
 <script lang="ts">
 	import { goto } from "$app/navigation";
 	import { toast } from "svelte-sonner";
-	import { Folder } from "@lucide/svelte";
+	import { Upload } from "@lucide/svelte";
 	import { settingsService } from "$lib/presentation/stores/workspace";
+	import { importBackupFromFile } from "$lib/utils/import-backup";
 	import AccountForm from "$lib/presentation/components/AccountForm.svelte";
 	import type { Currency } from "$lib/domain/entities";
 
 	let step = $state(1);
 	let currency = $state<Currency>(detectCurrency());
 	let saving = $state(false);
+	let importing = $state(false);
+
+	async function handleImportBackup(e: Event) {
+		const input = e.target as HTMLInputElement;
+		const file = input.files?.[0];
+		if (!file) return;
+		importing = true;
+		try {
+			await importBackupFromFile(file);
+			await settingsService.completeOnboarding();
+			toast.success("Backup importado");
+			setTimeout(() => goto("/dashboard"), 400);
+		} catch (err) {
+			toast.error(err instanceof Error ? err.message : "Error al importar");
+		} finally {
+			importing = false;
+			input.value = "";
+		}
+	}
 
 	function detectCurrency(): Currency {
 		const lang = navigator.language.toLowerCase();
@@ -67,24 +87,35 @@
 				>
 					Comenzar
 				</button>
+
+				<div class="flex flex-col gap-2 pt-2">
+					<span class="text-xs text-muted">¿Ya tenés un backup?</span>
+					<label class="flex items-center justify-center gap-2 cursor-pointer text-sm text-muted hover:text-foreground transition-colors">
+						<Upload size={14} />
+						{importing ? "Importando..." : "Importar backup"}
+						<input type="file" accept=".json" class="hidden" onchange={handleImportBackup} disabled={importing} />
+					</label>
+				</div>
 			</div>
 		{:else if step === 2}
 			<div class="flex flex-col gap-6 text-center">
 				<div>
 					<h1 class="text-2xl font-bold">Tus datos, tu control</h1>
 					<p class="mt-3 text-sm text-muted leading-relaxed">
-						Tus datos se guardan solo en este dispositivo. Si desinstalás la app sin hacer backup, los perdés.
+						Tus finanzas se guardan solo en este dispositivo. Nadie más puede verlas — ni siquiera nosotros.
 					</p>
-				</div>
-				<div class="flex flex-col items-center gap-2 rounded-xl bg-surface p-4">
-					<Folder class="size-8 text-muted" />
-					<span class="text-sm text-muted">Almacenamiento interno de la app</span>
+					<p class="mt-2 text-sm text-muted leading-relaxed">
+						Vos decidís cuándo exportar un backup. Si cambiás de celular o desinstalás la app sin hacer backup, perdés tus datos para siempre.
+					</p>
+					<p class="mt-2 text-sm text-muted leading-relaxed">
+						Podés exportar e importar backups desde Ajustes en cualquier momento.
+					</p>
 				</div>
 				<button
 					onclick={() => { step = 3; }}
 					class="w-full rounded-xl bg-primary px-4 py-3 text-sm font-medium text-primary-foreground transition-colors hover:opacity-90"
 				>
-					Usar ubicación por defecto
+					Entendido
 				</button>
 			</div>
 		{:else if step === 3}

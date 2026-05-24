@@ -3,17 +3,24 @@
 	import { toast } from "svelte-sonner";
 	import { Download, Upload, Folder } from "@lucide/svelte";
 	import { Share } from "@capacitor/share";
-	import JSZip from "jszip";
-	import { settingsService, workspaceReady } from "$lib/presentation/stores/workspace";
-	import { getDB } from "$lib/infrastructure/db/sqlite";
+	import * as AlertDialog from "$lib/components/ui/alert-dialog/index.js";
+	import {
+		settingsService,
+		workspaceReady,
+	} from "$lib/presentation/stores/workspace";
+	import { getDB, closeDatabase } from "$lib/infrastructure/db/sqlite";
+	import { importBackupFromFile } from "$lib/utils/import-backup";
 	import type { Currency } from "$lib/domain/entities";
+	import { Capacitor } from "@capacitor/core";
+	import { Filesystem, Directory, Encoding } from "@capacitor/filesystem";
 
 	let currency = $state<Currency>("COP");
 	let saving = $state(false);
 	let exporting = $state(false);
 	let importing = $state(false);
-	let syncing = $state(false);
 	let lastBackupAt = $state<string | null>(null);
+	let confirmOpen = $state(false);
+	let pendingFile = $state<File | null>(null);
 
 	onMount(async () => {
 		await workspaceReady;
@@ -24,24 +31,28 @@
 
 	const daysSinceBackup = $derived(
 		lastBackupAt
-			? Math.floor((Date.now() - new Date(lastBackupAt).getTime()) / (1000 * 60 * 60 * 24))
+			? Math.floor(
+					(Date.now() - new Date(lastBackupAt).getTime()) /
+						(1000 * 60 * 60 * 24),
+				)
 			: null,
 	);
 
 	function formatBackupDate(iso: string): string {
 		const date = new Date(iso);
 		const now = new Date();
-		const diffMs = now.getTime() - date.getTime();
-		const diffMin = Math.floor(diffMs / 60000);
-		const diffHr = Math.floor(diffMs / 3600000);
-		const diffDay = Math.floor(diffMs / 86400000);
-
+		const diffMin = Math.floor((now.getTime() - date.getTime()) / 60000);
 		if (diffMin < 1) return "ahora";
 		if (diffMin < 60) return `hace ${diffMin} min`;
+		const diffHr = Math.floor(diffMin / 60);
 		if (diffHr < 24) return `hace ${diffHr}h`;
+		const diffDay = Math.floor(diffHr / 24);
 		if (diffDay === 1) return "ayer";
 		if (diffDay < 7) return `hace ${diffDay} días`;
-		return date.toLocaleDateString("es", { day: "numeric", month: "short" });
+		return date.toLocaleDateString("es", {
+			day: "numeric",
+			month: "short",
+		});
 	}
 
 	async function handleCurrencyChange() {
@@ -50,48 +61,52 @@
 			await settingsService.setCurrency(currency);
 			toast.success("Moneda actualizada");
 		} catch (err) {
-			toast.error(err instanceof Error ? err.message : "Error al guardar configuración");
+			toast.error(
+				err instanceof Error
+					? err.message
+					: "Error al guardar configuración",
+			);
 		} finally {
 			saving = false;
 		}
 	}
 
-	async function collectWorkspace() {
-		const db = getDB();
-		const accounts = (await db.query("SELECT * FROM accounts")).values ?? [];
-		const categories = (await db.query("SELECT * FROM categories")).values ?? [];
-		const settings = (await db.query("SELECT * FROM settings WHERE key = ?", ["default"])).values?.[0] ?? null;
-		const records = (await db.query("SELECT * FROM records ORDER BY date ASC")).values ?? [];
-
-		const recordsByMonth = new Map<string, object[]>();
-		for (const r of records) {
-			const d = new Date(r.date);
-			const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
-			if (!recordsByMonth.has(key)) recordsByMonth.set(key, []);
-			recordsByMonth.get(key)!.push(r);
-		}
-
-		const manifest = { version: 1, exportedAt: new Date().toISOString(), recordCount: records.length, settingsCurrency: settings?.currency ?? "COP" };
-		return { manifest, accounts, categories, settings, recordsByMonth };
-	}
-
 	async function handleExport() {
 		exporting = true;
 		try {
-			const { manifest, accounts, categories, settings, recordsByMonth } = await collectWorkspace();
+			const db = getDB();
+			const accounts =
+				(await db.query("SELECT * FROM accounts")).values ?? [];
+			const categories =
+				(await db.query("SELECT * FROM categories")).values ?? [];
+			const settings =
+				(
+					await db.query("SELECT * FROM settings WHERE key = ?", [
+						"default",
+					])
+				).values?.[0] ?? null;
+			const allRecords =
+				(await db.query("SELECT * FROM records ORDER BY date ASC"))
+					.values ?? [];
 
-			const zip = new JSZip();
-			const workspace = zip.folder("workspace")!;
-			workspace.file("manifest.json", JSON.stringify(manifest, null, 2));
-			workspace.file("accounts.json", JSON.stringify(accounts, null, 2));
-			workspace.file("categories.json", JSON.stringify(categories, null, 2));
-			workspace.file("settings.json", JSON.stringify(settings, null, 2));
-			const recordsFolder = workspace.folder("records")!;
-			for (const [month, recs] of recordsByMonth) {
-				recordsFolder.file(`${month}.json`, JSON.stringify(recs, null, 2));
+			const recordsByMonth: Record<string, object[]> = {};
+			for (const r of allRecords) {
+				const d = new Date(r.date);
+				const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
+				if (!recordsByMonth[key]) recordsByMonth[key] = [];
+				recordsByMonth[key].push(r);
 			}
 
-			const blob = await zip.generateAsync({ type: "blob" });
+			const backup = {
+				version: "1.0",
+				exportedAt: new Date().toISOString(),
+				accounts,
+				categories,
+				settings,
+				records: recordsByMonth,
+			};
+
+			const json = JSON.stringify(backup, null, 2);
 
 			const now = new Date().toISOString();
 			const current = await settingsService.getSettings();
@@ -101,27 +116,47 @@
 			}
 			lastBackupAt = now;
 
-			try {
-				const base64 = await blobToBase64(blob);
-				await Share.share({
-					title: "Backup PersonalFinApp",
-					text: "Backup de mis finanzas personales",
-					files: [base64],
+			const filename = `finapp-backup-${new Date().toISOString().split("T")[0]}.json`;
+
+			if (Capacitor.isNativePlatform()) {
+				// escribís el archivo en cache
+				await Filesystem.writeFile({
+					path: filename,
+					data: json,
+					directory: Directory.Cache,
+					encoding: Encoding.UTF8,
 				});
-				toast.success("Backup exportado");
-			} catch {
+
+				// obtenés la URI real del archivo
+				const { uri } = await Filesystem.getUri({
+					path: filename,
+					directory: Directory.Cache,
+				});
+
+				// compartís la URI — Android muestra "Guardar en Drive", "Guardar en Descargas", etc.
+				await Share.share({
+					title: "Backup FinApp",
+					url: uri, // ← URI del archivo, no base64
+					dialogTitle: "Guardar backup",
+				});
+			} else {
+				// fallback web para desarrollo
+				const blob = new Blob([json], { type: "application/json" });
 				const url = URL.createObjectURL(blob);
 				const a = document.createElement("a");
 				a.href = url;
-				a.download = `personalfinapp_backup_${new Date().toISOString().split("T")[0]}.zip`;
+				a.download = filename;
 				document.body.appendChild(a);
 				a.click();
 				document.body.removeChild(a);
 				URL.revokeObjectURL(url);
-				toast.success("Backup exportado");
 			}
+
+			toast.success("Backup exportado");
 		} catch (err) {
-			toast.error(err instanceof Error ? err.message : "Error al exportar");
+			toast.error(
+				err instanceof Error ? err.message : "Error al exportar",
+			);
 		} finally {
 			exporting = false;
 		}
@@ -138,67 +173,31 @@
 		});
 	}
 
-	async function handleImport(e: Event) {
+	function handleFileSelected(e: Event) {
 		const input = e.target as HTMLInputElement;
 		const file = input.files?.[0];
 		if (!file) return;
+		pendingFile = file;
+		confirmOpen = true;
+		input.value = "";
+	}
+
+	async function handleImportConfirmed() {
+		if (!pendingFile) return;
 		importing = true;
 		try {
-			const zip = await JSZip.loadAsync(file);
-			const prefix = "workspace/";
-			const manifestFile = zip.file(`${prefix}manifest.json`);
-			if (!manifestFile) throw new Error("manifest.json no encontrado en el backup");
-			const accountsFile = zip.file(`${prefix}accounts.json`);
-			const categoriesFile = zip.file(`${prefix}categories.json`);
-			const settingsFile = zip.file(`${prefix}settings.json`);
-			const accounts = accountsFile ? JSON.parse(await accountsFile.async("string")) : [];
-			const categories = categoriesFile ? JSON.parse(await categoriesFile.async("string")) : [];
-			const settings = settingsFile ? JSON.parse(await settingsFile.async("string")) : null;
-			const records: object[] = [];
-			const recordsDir = `${prefix}records/`;
-			for (const [path, entry] of Object.entries(zip.files)) {
-				if (path.startsWith(recordsDir) && !entry.dir) {
-					const monthRecords = JSON.parse(await entry.async("string"));
-					records.push(...monthRecords);
-				}
-			}
-
-			const db = getDB();
-			await db.execute("DELETE FROM accounts");
-			await db.execute("DELETE FROM categories");
-			await db.execute("DELETE FROM records");
-
-			for (const a of accounts as any[]) {
-				await db.run(
-					`INSERT INTO accounts (id, name, type, currency, balance, isActive, createdAt, updatedAt) VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
-					[a.id, a.name, a.type, a.currency, a.balance ?? 0, a.isActive ? 1 : 0, a.createdAt ?? new Date().toISOString(), a.updatedAt ?? new Date().toISOString()],
-				);
-			}
-			for (const c of categories as any[]) {
-				await db.run(
-					`INSERT INTO categories (id, name, type, isDefault, createdAt, updatedAt) VALUES (?, ?, ?, ?, ?, ?)`,
-					[c.id, c.name, c.type, c.isDefault ? 1 : 0, c.createdAt ?? new Date().toISOString(), c.updatedAt ?? new Date().toISOString()],
-				);
-			}
-			for (const r of records as any[]) {
-				await db.run(
-					`INSERT INTO records (id, type, amount, accountId, toAccountId, categoryId, note, date, createdAt, updatedAt) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-					[r.id, r.type, r.amount, r.accountId, r.toAccountId ?? null, r.categoryId, r.note ?? null, r.date instanceof Date ? r.date.toISOString() : r.date, r.createdAt instanceof Date ? r.createdAt.toISOString() : r.createdAt, r.updatedAt instanceof Date ? r.updatedAt.toISOString() : r.updatedAt],
-				);
-			}
-			if (settings) {
-				await db.run(
-					`INSERT OR REPLACE INTO settings (key, currency, onboardingCompleted, lastBackupAt) VALUES (?, ?, ?, ?)`,
-					[settings.key, settings.currency, settings.onboardingCompleted ? 1 : 0, settings.lastBackupAt ?? null],
-				);
-			}
+			await importBackupFromFile(pendingFile);
 			toast.success("Datos importados correctamente");
+			await closeDatabase();
 			setTimeout(() => window.location.reload(), 800);
 		} catch (err) {
-			toast.error(err instanceof Error ? err.message : "Error al importar");
+			toast.error(
+				err instanceof Error ? err.message : "Error al importar",
+			);
 		} finally {
 			importing = false;
-			input.value = "";
+			pendingFile = null;
+			confirmOpen = false;
 		}
 	}
 </script>
@@ -241,10 +240,18 @@
 			{exporting ? "Exportando..." : "Exportar backup"}
 		</button>
 
-		<label class="flex items-center gap-2 rounded-lg bg-surface-raised px-4 py-3 text-sm text-foreground transition-colors hover:opacity-80 disabled:opacity-50 cursor-pointer">
+		<label
+			class="flex items-center gap-2 rounded-lg bg-surface-raised px-4 py-3 text-sm text-foreground transition-colors hover:opacity-80 disabled:opacity-50 cursor-pointer"
+		>
 			<Upload size={16} />
 			{importing ? "Importando..." : "Importar backup"}
-			<input type="file" accept=".zip" class="hidden" onchange={handleImport} disabled={importing} />
+			<input
+				type="file"
+				accept=".json"
+				class="hidden"
+				onchange={handleFileSelected}
+				disabled={importing}
+			/>
 		</label>
 
 		{#if lastBackupAt}
@@ -259,8 +266,28 @@
 		{/if}
 	</div>
 
-	<div class="flex items-center justify-between rounded-xl border border-border p-4">
+	<div
+		class="flex items-center justify-between rounded-xl border border-border p-4"
+	>
 		<span>Acerca de PersonalFinApp</span>
 		<span class="text-xs text-muted">v0.0.1</span>
 	</div>
 </div>
+
+<AlertDialog.Root bind:open={confirmOpen}>
+	<AlertDialog.Content>
+		<AlertDialog.Header>
+			<AlertDialog.Title>¿Importar backup?</AlertDialog.Title>
+			<AlertDialog.Description>
+				Esto reemplazará todos tus datos actuales. Esta acción no se
+				puede deshacer.
+			</AlertDialog.Description>
+		</AlertDialog.Header>
+		<AlertDialog.Footer>
+			<AlertDialog.Cancel>Cancelar</AlertDialog.Cancel>
+			<AlertDialog.Action onclick={handleImportConfirmed}>
+				{importing ? "Importando..." : "Importar"}
+			</AlertDialog.Action>
+		</AlertDialog.Footer>
+	</AlertDialog.Content>
+</AlertDialog.Root>

@@ -65,6 +65,18 @@ export async function initDatabase(): Promise<void> {
 	`);
 }
 
+export async function closeDatabase(): Promise<void> {
+	if (db) {
+		try {
+			await db.close();
+			await sqliteConnection.closeConnection(DB_NAME, false);
+		} catch {
+			// Ignore close errors
+		}
+		db = null;
+	}
+}
+
 export function getDB(): SQLiteDBConnection {
 	if (!db) throw new Error('Database not initialized. Call initDatabase() first.');
 	return db;

@@ -1,4 +1,5 @@
 import type { Currency } from '../../domain/entities/enums';
+import type { AppSettings } from '../../domain/entities/AppSettings';
 import type { IAppSettingsRepository } from '../../domain/repositories/IAppSettingsRepository';
 
 export class SettingsService {
@@ -15,6 +16,7 @@ export class SettingsService {
 			key: 'default',
 			currency,
 			onboardingCompleted: settings?.onboardingCompleted ?? false,
+			lastBackupAt: settings?.lastBackupAt,
 		});
 	}
 
@@ -29,6 +31,15 @@ export class SettingsService {
 			key: 'default',
 			currency: settings?.currency ?? 'COP',
 			onboardingCompleted: true,
+			lastBackupAt: settings?.lastBackupAt,
 		});
+	}
+
+	async getSettings(): Promise<AppSettings | null> {
+		return this.repo.get();
+	}
+
+	async updateSettings(settings: AppSettings): Promise<void> {
+		await this.repo.save(settings);
 	}
 }

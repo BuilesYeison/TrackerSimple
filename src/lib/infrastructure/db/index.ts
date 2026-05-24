@@ -1,2 +1,1 @@
-export { AppDatabase, getDb } from './database';
-export { seedDefaultCategories } from './seed';
+export { initDatabase, getDB } from './sqlite';

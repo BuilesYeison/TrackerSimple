@@ -38,13 +38,16 @@
 		"vitest-browser-svelte": "^2.1.0"
 	},
 	"dependencies": {
+		"@capacitor-community/sqlite": "^8.1.0",
 		"@capacitor/android": "^8.3.4",
 		"@capacitor/core": "^8.3.4",
 		"@capacitor/filesystem": "^8.1.2",
 		"@capacitor/ios": "^8.3.4",
+		"@capacitor/share": "^8.0.1",
 		"clsx": "^2.1.1",
-		"dexie": "^4.4.2",
+		"jeep-sqlite": "^2.8.0",
 		"jszip": "^3.10.1",
+		"sql.js": "^1.14.1",
 		"tailwind-merge": "^3.6.0",
 		"uuid": "^14.0.0"
 	}

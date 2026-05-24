@@ -4,4 +4,5 @@ export interface AppSettings {
 	key: string;
 	currency: Currency;
 	onboardingCompleted: boolean;
+	lastBackupAt?: string;
 }

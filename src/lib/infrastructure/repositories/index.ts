@@ -1,4 +1,4 @@
-export { DexieAccountRepository } from './DexieAccountRepository';
-export { DexieRecordRepository } from './DexieRecordRepository';
-export { DexieCategoryRepository } from './DexieCategoryRepository';
-export { DexieAppSettingsRepository } from './DexieAppSettingsRepository';
+export { SqliteAccountRepository } from './SqliteAccountRepository';
+export { SqliteRecordRepository } from './SqliteRecordRepository';
+export { SqliteCategoryRepository } from './SqliteCategoryRepository';
+export { SqliteAppSettingsRepository } from './SqliteAppSettingsRepository';

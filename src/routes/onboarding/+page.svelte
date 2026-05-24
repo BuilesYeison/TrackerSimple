@@ -71,14 +71,14 @@
 		{:else if step === 2}
 			<div class="flex flex-col gap-6 text-center">
 				<div>
-					<h1 class="text-2xl font-bold">¿Dónde guardar tus datos?</h1>
+					<h1 class="text-2xl font-bold">Tus datos, tu control</h1>
 					<p class="mt-3 text-sm text-muted leading-relaxed">
-						Tus finanzas se guardan como archivos JSON en tu dispositivo. Podés abrirlos con cualquier editor, copiarlos o moverlos.
+						Tus datos se guardan solo en este dispositivo. Si desinstalás la app sin hacer backup, los perdés.
 					</p>
 				</div>
 				<div class="flex flex-col items-center gap-2 rounded-xl bg-surface p-4">
 					<Folder class="size-8 text-muted" />
-					<span class="text-sm text-muted">Documents / PersonalFinApp</span>
+					<span class="text-sm text-muted">Almacenamiento interno de la app</span>
 				</div>
 				<button
 					onclick={() => { step = 3; }}

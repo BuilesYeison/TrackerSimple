@@ -27,7 +27,7 @@ export function createRecord(params: {
 }): Record {
 	const now = new Date();
 	let id = uuidv4()
-	if (typeof crypto !== undefined && crypto.randomUUID) {
+	if (typeof crypto === "object" && crypto.randomUUID) {
 		id = crypto.randomUUID()
 	}
 	return {

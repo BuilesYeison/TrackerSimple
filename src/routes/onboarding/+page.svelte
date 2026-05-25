@@ -2,6 +2,7 @@
 	import { goto } from "$app/navigation";
 	import { toast } from "svelte-sonner";
 	import { Upload } from "@lucide/svelte";
+	import * as AlertDialog from "$lib/components/ui/alert-dialog/index.js";
 	import { settingsService } from "$lib/presentation/stores/workspace";
 	import { importBackupFromFile } from "$lib/utils/import-backup";
 	import AccountForm from "$lib/presentation/components/AccountForm.svelte";
@@ -11,14 +12,23 @@
 	let currency = $state<Currency>(detectCurrency());
 	let saving = $state(false);
 	let importing = $state(false);
+	let confirmOpen = $state(false);
+	let pendingFile = $state<File | null>(null);
 
-	async function handleImportBackup(e: Event) {
+	function handleFileSelected(e: Event) {
 		const input = e.target as HTMLInputElement;
 		const file = input.files?.[0];
 		if (!file) return;
+		pendingFile = file;
+		confirmOpen = true;
+		input.value = "";
+	}
+
+	async function handleImportConfirmed() {
+		if (!pendingFile) return;
 		importing = true;
 		try {
-			await importBackupFromFile(file);
+			await importBackupFromFile(pendingFile);
 			await settingsService.completeOnboarding();
 			toast.success("Backup importado");
 			setTimeout(() => goto("/dashboard"), 400);
@@ -26,7 +36,8 @@
 			toast.error(err instanceof Error ? err.message : "Error al importar");
 		} finally {
 			importing = false;
-			input.value = "";
+			confirmOpen = false;
+			pendingFile = null;
 		}
 	}
 
@@ -93,7 +104,7 @@
 					<label class="flex items-center justify-center gap-2 cursor-pointer text-sm text-muted hover:text-foreground transition-colors">
 						<Upload size={14} />
 						{importing ? "Importando..." : "Importar backup"}
-						<input type="file" accept=".json" class="hidden" onchange={handleImportBackup} disabled={importing} />
+						<input type="file" accept=".json" class="hidden" onchange={handleFileSelected} disabled={importing} />
 					</label>
 				</div>
 			</div>
@@ -169,3 +180,20 @@
 		{/if}
 	</div>
 </div>
+
+<AlertDialog.Root bind:open={confirmOpen}>
+	<AlertDialog.Content>
+		<AlertDialog.Header>
+			<AlertDialog.Title>¿Importar backup?</AlertDialog.Title>
+			<AlertDialog.Description>
+				Esto reemplazará todos tus datos actuales. Esta acción no se puede deshacer.
+			</AlertDialog.Description>
+		</AlertDialog.Header>
+		<AlertDialog.Footer>
+			<AlertDialog.Cancel>Cancelar</AlertDialog.Cancel>
+			<AlertDialog.Action onclick={handleImportConfirmed}>
+				{importing ? "Importando..." : "Importar"}
+			</AlertDialog.Action>
+		</AlertDialog.Footer>
+	</AlertDialog.Content>
+</AlertDialog.Root>

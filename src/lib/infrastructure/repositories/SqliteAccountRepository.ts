@@ -25,7 +25,7 @@ export class SqliteAccountRepository implements IAccountRepository {
 		await db.run(
 			`INSERT INTO accounts (id, name, type, currency, balance, isActive, createdAt, updatedAt)
 			 VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
-			[account.id, account.name, account.type, account.currency, account.balance, 1, toISO(account.createdAt), toISO(account.updatedAt)],
+			[account.id, account.name, account.type, account.currency, account.balance, account.isActive ? 1 : 0, toISO(account.createdAt), toISO(account.updatedAt)],
 		);
 	}
 

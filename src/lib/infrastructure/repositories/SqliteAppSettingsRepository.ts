@@ -20,17 +20,9 @@ export class SqliteAppSettingsRepository implements IAppSettingsRepository {
 
 	async save(settings: AppSettings): Promise<void> {
 		const db = getDB();
-		const existing = await this.get();
-		if (existing) {
-			await db.run(
-				`UPDATE settings SET currency = ?, onboardingCompleted = ?, lastBackupAt = ? WHERE key = ?`,
-				[settings.currency, settings.onboardingCompleted ? 1 : 0, settings.lastBackupAt || null, 'default'],
-			);
-		} else {
-			await db.run(
-				`INSERT INTO settings (key, currency, onboardingCompleted, lastBackupAt) VALUES (?, ?, ?, ?)`,
-				['default', settings.currency, settings.onboardingCompleted ? 1 : 0, settings.lastBackupAt || null],
-			);
-		}
+		await db.run(
+			`INSERT OR REPLACE INTO settings (key, currency, onboardingCompleted, lastBackupAt) VALUES (?, ?, ?, ?)`,
+			['default', settings.currency, settings.onboardingCompleted ? 1 : 0, settings.lastBackupAt || null],
+		);
 	}
 }

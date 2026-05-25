@@ -1,4 +1,4 @@
-import { initDatabase } from '../../infrastructure/db/sqlite';
+import { getDB, initDatabase } from '../../infrastructure/db/sqlite';
 import { SqliteAccountRepository, SqliteCategoryRepository, SqliteRecordRepository, SqliteAppSettingsRepository } from '../../infrastructure/repositories';
 import { AccountService, CategoryService, RecordService, SettingsService } from '../../application/services';
 import { createCategory, DEFAULT_CATEGORIES } from '../../domain/entities';
@@ -36,6 +36,17 @@ export async function initWorkspace(): Promise<void> {
 
 	ready = true;
 	resolveReady();
+}
+
+export async function reconnectDatabase(): Promise<void> {
+	try {
+		const db = getDB();
+		if (!(await db.isDBOpen()).result) {
+			await initDatabase();
+		}
+	} catch {
+		await initDatabase();
+	}
 }
 
 export function isReady(): boolean {

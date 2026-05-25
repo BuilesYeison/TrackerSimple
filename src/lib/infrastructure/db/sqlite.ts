@@ -3,6 +3,7 @@ import type { SQLiteDBConnection } from '@capacitor-community/sqlite/dist/esm/de
 
 const sqliteConnection = new SQLiteConnection(CapacitorSQLite);
 const DB_NAME = 'personalfinapp';
+const TARGET_VERSION = 2;
 let db: SQLiteDBConnection | null = null;
 
 export async function initDatabase(): Promise<void> {
@@ -16,7 +17,21 @@ export async function initDatabase(): Promise<void> {
 
 	await db.open();
 
-	await db.execute(`
+	await createInitialSchema();
+	await runMigrations();
+}
+
+async function getCurrentVersion(): Promise<number> {
+	const result = await db!.query('PRAGMA user_version');
+	return Number(result.values?.[0]?.user_version ?? 0);
+}
+
+async function setVersion(version: number): Promise<void> {
+	await db!.execute(`PRAGMA user_version = ${version}`);
+}
+
+async function createInitialSchema(): Promise<void> {
+	await db!.execute(`
 		CREATE TABLE IF NOT EXISTS accounts (
 			id TEXT PRIMARY KEY,
 			name TEXT NOT NULL,
@@ -29,7 +44,7 @@ export async function initDatabase(): Promise<void> {
 		)
 	`);
 
-	await db.execute(`
+	await db!.execute(`
 		CREATE TABLE IF NOT EXISTS categories (
 			id TEXT PRIMARY KEY,
 			name TEXT NOT NULL UNIQUE,
@@ -40,7 +55,7 @@ export async function initDatabase(): Promise<void> {
 		)
 	`);
 
-	await db.execute(`
+	await db!.execute(`
 		CREATE TABLE IF NOT EXISTS records (
 			id TEXT PRIMARY KEY,
 			type TEXT NOT NULL,
@@ -55,7 +70,7 @@ export async function initDatabase(): Promise<void> {
 		)
 	`);
 
-	await db.execute(`
+	await db!.execute(`
 		CREATE TABLE IF NOT EXISTS settings (
 			key TEXT PRIMARY KEY,
 			currency TEXT NOT NULL DEFAULT 'COP',
@@ -63,6 +78,31 @@ export async function initDatabase(): Promise<void> {
 			lastBackupAt TEXT
 		)
 	`);
+}
+
+async function runMigrations(): Promise<void> {
+	const current = await getCurrentVersion();
+
+	if (current < 1) {
+		await setVersion(1);
+	}
+
+	if (current < 2) {
+		await db!.execute(`CREATE INDEX IF NOT EXISTS idx_records_date ON records(date)`);
+		await db!.execute(`CREATE INDEX IF NOT EXISTS idx_records_accountId ON records(accountId)`);
+		await db!.execute(`CREATE INDEX IF NOT EXISTS idx_records_categoryId ON records(categoryId)`);
+		await db!.execute(`CREATE INDEX IF NOT EXISTS idx_records_toAccountId ON records(toAccountId)`);
+		await db!.execute(`CREATE INDEX IF NOT EXISTS idx_categories_isDefault ON categories(isDefault)`);
+		await db!.execute(`CREATE INDEX IF NOT EXISTS idx_accounts_isActive ON accounts(isActive)`);
+
+		try {
+			await db!.execute(`ALTER TABLE records ADD COLUMN tag TEXT`);
+		} catch {
+			// Column already exists
+		}
+
+		await setVersion(2);
+	}
 }
 
 export async function closeDatabase(): Promise<void> {

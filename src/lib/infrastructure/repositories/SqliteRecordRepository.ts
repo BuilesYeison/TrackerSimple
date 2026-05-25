@@ -15,7 +15,7 @@ function mapRow(row: any): Record {
 		toAccountId: row.toAccountId || null,
 		categoryId: row.categoryId,
 		note: row.note || null,
-		tag: null,
+		tag: row.tag || null,
 		date: new Date(row.date),
 		createdAt: new Date(row.createdAt),
 		updatedAt: new Date(row.updatedAt),
@@ -26,17 +26,17 @@ export class SqliteRecordRepository implements IRecordRepository {
 	async create(record: Record): Promise<void> {
 		const db = getDB();
 		await db.run(
-			`INSERT INTO records (id, type, amount, accountId, toAccountId, categoryId, note, date, createdAt, updatedAt)
-			 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-			[record.id, record.type, record.amount, record.accountId, record.toAccountId, record.categoryId, record.note, toISO(record.date), toISO(record.createdAt), toISO(record.updatedAt)],
+			`INSERT INTO records (id, type, amount, accountId, toAccountId, categoryId, note, tag, date, createdAt, updatedAt)
+			 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+			[record.id, record.type, record.amount, record.accountId, record.toAccountId, record.categoryId, record.note, record.tag, toISO(record.date), toISO(record.createdAt), toISO(record.updatedAt)],
 		);
 	}
 
 	async update(record: Record): Promise<void> {
 		const db = getDB();
 		await db.run(
-			`UPDATE records SET type = ?, amount = ?, accountId = ?, toAccountId = ?, categoryId = ?, note = ?, date = ?, updatedAt = ? WHERE id = ?`,
-			[record.type, record.amount, record.accountId, record.toAccountId, record.categoryId, record.note, toISO(record.date), toISO(new Date()), record.id],
+			`UPDATE records SET type = ?, amount = ?, accountId = ?, toAccountId = ?, categoryId = ?, note = ?, tag = ?, date = ?, updatedAt = ? WHERE id = ?`,
+			[record.type, record.amount, record.accountId, record.toAccountId, record.categoryId, record.note, record.tag, toISO(record.date), toISO(new Date()), record.id],
 		);
 	}
 

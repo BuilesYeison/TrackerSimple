@@ -15,5 +15,8 @@
 	},
 	"files.associations": {
 		"*.css": "tailwindcss"
+	},
+	"[skill]": {
+		"editor.defaultFormatter": "unifiedjs.vscode-remark"
 	}
 }

@@ -4,9 +4,10 @@
 	import { onMount } from "svelte";
 	import { page } from "$app/stores";
 	import { goto } from "$app/navigation";
-	import { initWorkspace, settingsService } from "$lib/presentation/stores/workspace";
+	import { initWorkspace, settingsService, reconnectDatabase } from "$lib/presentation/stores/workspace";
 	import Sidebar from "$lib/presentation/components/Sidebar.svelte";
 	import { Toaster } from "$lib/components/ui/sonner/index.js";
+	import { App } from "@capacitor/app";
 
 	let { children } = $props();
 
@@ -14,6 +15,10 @@
 
 	onMount(async () => {
 		await initWorkspace();
+
+		App.addListener("resume", () => {
+			reconnectDatabase();
+		});
 
 		const completed = await settingsService.isOnboardingCompleted();
 		checkingOnboarding = false;

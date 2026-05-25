@@ -1,4 +1,4 @@
-package dev.personalfinapp;
+package dev.trackersimple;
 
 import com.getcapacitor.BridgeActivity;
 

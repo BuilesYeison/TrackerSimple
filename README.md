@@ -1,364 +1,128 @@
-# Personal Finance App — README Draft
+# trackersimple
 
-## 📌 Overview
-
-Aplicación mobile-first para gestión de finanzas personales enfocada en:
-
-- simplicidad
-- privacidad
-- velocidad de uso
-- funcionamiento offline
-- portabilidad de datos
-- compatibilidad futura con herramientas de IA
-
-El objetivo principal no es crear una plataforma financiera compleja o empresarial, sino una herramienta sencilla que permita a cualquier persona registrar ingresos, gastos y transferencias de forma rápida y consistente.
+App mobile-first de finanzas personales. Local-first, offline-first, sin servidor, sin cuentas.
 
 ---
 
-# 🎯 Filosofía del Proyecto
+## Stack
 
-La aplicación se basa en los siguientes principios:
-
-## ✅ Local-first
-
-Toda la información pertenece al usuario y se almacena localmente en el dispositivo.
-
-La aplicación funciona completamente offline.
-
----
-
-## ✅ Simplicidad
-
-Registrar movimientos financieros debe tomar pocos segundos.
-
-Se evita:
-
-- sobrecarga de categorías
-- configuraciones complejas
-- dashboards innecesarios
-- procesos contables avanzados
+| Capa      | Tecnología                             |
+| --------- | -------------------------------------- |
+| Framework | SvelteKit (`@sveltejs/adapter-static`) |
+| Runtime   | Capacitor (Android + iOS)              |
+| Storage   | `@capacitor-community/sqlite` (SQLite) |
+| UI        | Tailwind CSS v4 + shadcn-svelte        |
+| Íconos    | `@lucide/svelte`                       |
+| Lint      | Biome                                  |
+| Test      | Vitest                                 |
 
 ---
 
-## ✅ Privacidad
+## Filosofía
 
-No se requiere:
-
-- cuenta
-- backend
-- sincronización obligatoria
-- conexión bancaria
-
----
-
-## ✅ Portabilidad
-
-Los datos pueden exportarse fácilmente en formatos abiertos (`JSON`).
+- **Local-first** — todos los datos se guardan en el dispositivo vía SQLite
+- **Offline-first** — cero conectividad requerida
+- **Privacidad total** — sin cuentas, sin backend, sin tracking
+- **Portabilidad** — exportación JSON abierta con checksum SHA-256
+- **AI-friendly** — formato legible, estructura estable, fácil de consumir por agentes externos
 
 ---
 
-## ✅ AI-Friendly
+## Features (MVP)
 
-La estructura de datos será:
-
-- abierta
-- documentada
-- estable
-- fácilmente consumible por agentes de IA
-
-Esto permitirá futuras integraciones con:
-
-- asistentes personales
-- análisis automáticos
-- reportes inteligentes
-- clasificación automática
-- herramientas CLI y agentes locales
+| Feature                                                           | Estado |
+| ----------------------------------------------------------------- | ------ |
+| Onboarding (moneda + primera cuenta)                              | ✅      |
+| CRUD de cuentas (efectivo, débito, crédito)                       | ✅      |
+| Registro rápido (gastos, ingresos, transferencias)                | ✅      |
+| Dashboard con balance, resumen mensual, top categorías            | ✅      |
+| Listado de registros agrupados por día, filtros por tipo y mes    | ✅      |
+| Analytics: flujo de caja, balance acumulado, gastos por categoría | ✅      |
+| Exportación JSON con SHA-256 checksum                             | ✅      |
+| Importación con validación y confirmación                         | ✅      |
+| Dark mode monocromático (#0a0a0a) con acentos verde/rojo/morado   | ✅      |
+| Aviso de backup (>7 días sin exportar)                            | ✅      |
 
 ---
 
-# 📱 Alcance del Producto
+## Getting started
 
-## MVP Inicial
+```sh
+npm install
+npm run build:sync
+npm run android       # o: npm run ios
+```
 
-La primera versión del producto incluirá:
+Para desarrollo de UI (sin SQLite):
+```sh
+npm run dev -- --host
+```
 
-### Gestión de cuentas
-
-- Crear cuentas
-- Editar cuentas
-- Desactivar cuentas
-
-Tipos iniciales:
-
-- Efectivo (`cash`)
-- Débito (`debit`)
-- Crédito (`credit`)
+Debuggear en dispositivo Android: conectar vía USB, abrir `chrome://inspect`.
 
 ---
 
-### Registro de movimientos
-
-Tipos soportados:
-
-- Gastos
-- Ingresos
-- Transferencias
-
-Cada movimiento incluirá:
-
-- monto
-- fecha
-- cuenta
-- categoría
-- descripción opcional
-
----
-
-### Categorías simples
-
-Categorías iniciales por defecto:
-
-#### Gastos
-
-- Comida
-- Transporte
-- Salud
-- Educación
-- Vivienda
-- Automóvil
-- Deportes
-- Entretenimiento
-- Mascotas
-- Regalos
-- Ropa
-
-#### Ingresos
-
-- Salario
-- Depósitos
-- Ahorros
-
-El usuario podrá crear nuevas categorías.
-
----
-
-### Dashboard principal
-
-Visualización rápida de:
-
-- balance total
-- ingresos del mes
-- gastos del mes
-- distribución de gastos por categoría
-- últimos movimientos
-
----
-
-### Exportación e importación
-
-La aplicación permitirá:
-
-- exportar datos
-- importar backups
-- mover información entre dispositivos
-
-Formato inicial:
-
-- JSON
-
----
-
-### Dark Mode
-
-Soporte de tema oscuro desde el MVP.
-
----
-
-# ❌ Fuera del MVP
-
-No se desarrollará inicialmente:
-
-- sincronización en nube
-- multiusuario
-- autenticación
-- conexión bancaria
-- suscripciones
-- IA integrada
-- OCR
-- presupuestos avanzados
-- inversiones
-- reportes contables
-- notificaciones inteligentes
-
----
-
-# 🏗️ Arquitectura General
-
-La aplicación utilizará una arquitectura:
-
-# Local-first + Offline-first
-
----
-
-## Runtime Database
-
-Para operación rápida de la aplicación se utilizará:
-
-- IndexedDB
-- Dexie.js
-
-Esto permite:
-
-- persistencia local
-- consultas rápidas
-- funcionamiento offline
-- experiencia fluida en móvil
-
----
-
-## Export Layer
-
-La aplicación podrá exportar snapshots estructurados en JSON.
-
-La exportación estará segmentada por períodos mensuales para evitar archivos gigantes.
-
-Ejemplo:
+## Arquitectura (Clean Architecture)
 
 ```
-workspace/│├── manifest.json├── accounts.json├── categories.json│└── records/    ├── 2026-01.json    ├── 2026-02.json    └── 2026-03.json
+domain/entities/        ← Account, Record, Category, AppSettings (puro TS)
+domain/repositories/    ← interfaces (IAccountRepository, etc.)
+application/services/   ← AccountService, RecordService, ExportService, etc.
+infrastructure/db/      ← SQLite connection manager + schema + migrations
+infrastructure/repos/   ← implementaciones concretas (SqliteAccountRepository, etc.)
+presentation/stores/    ← workspace.ts (composition root)
+presentation/components/← Svelte components reusables
+```
+
+**Regla**: UI nunca importa de `infrastructure/`. Todo pasa por servicios en `application/`.
+
+---
+
+## Diseño
+
+Sistema monocromático oscuro con tokens Tailwind v4 definidos en `src/app.css`:
+
+| Token                             | Color                 | Uso                |
+| --------------------------------- | --------------------- | ------------------ |
+| `background`                      | `#0a0a0a`             | Fondo principal    |
+| `surface`                         | `#111`                | Cards, elevación 1 |
+| `surface-raised`                  | `#141414`             | Hover, elevación 2 |
+| `foreground`                      | `#fafafa`             | Texto principal    |
+| `muted`                           | `#777`                | Texto secundario   |
+| `income` / `expense` / `transfer` | verde / rojo / morado | Acentos            |
+
+Solo dark mode. Sin toggle claro/oscuro.
+
+---
+
+## Backup
+
+**Exportar:** `ExportService.createBackup()` genera un JSON con SHA-256 checksum. Se comparte vía el diálogo nativo del sistema (Drive, Dropbox, WhatsApp).
+
+**Importar:** `ImportService.importFromFile()` valida el checksum antes de escribir. Siempre muestra confirmación `AlertDialog`.
+
+**Formato:**
+```json
+{
+  "version": "1.0",
+  "exportedAt": "2026-05-24T...",
+  "accounts": [...],
+  "categories": [...],
+  "settings": {...},
+  "records": { "2026-01": [...], "2026-05": [...] },
+  "checksum": "e3b0c442..."
+}
 ```
 
 ---
 
-# 🤖 Estrategia AI-Friendly
+## Reports
 
-La aplicación será diseñada desde el inicio para facilitar análisis por agentes externos.
-
-Objetivos:
-
-- formato legible
-- estructura estable
-- datos abiertos
-- fácil parsing
-- consumo incremental
-
-Ejemplo:
-
-- agentes CLI
-- análisis automáticos
-- embeddings
-- reportes IA
-- automatizaciones
+- `reports/audit-mvp.md` — auditoría completa de seguridad, datos y confiabilidad (42 findings)
+- `reports/audit-progress.md` — tracking de resolución (36/42 done)
 
 ---
 
-# 🛠️ Tecnologías
+## Fuera del MVP
 
-## Frontend
-
-- SvelteKit
-- Tailwind CSS
-- Skeleton UI
-
----
-
-## Persistencia
-
-- IndexedDB
-- Dexie.js
-
----
-
-## Deployment
-
-Aplicación:
-
-- PWA (Progressive Web App)
-
-Compatible con:
-
-- Android
-- iPhone
-- Desktop browsers
-
----
-
-# 📂 Estructura Inicial del Proyecto
-
-```
-src/│├── lib/│   ├── components/│   ├── stores/│   ├── services/│   ├── db/│   ├── models/│   ├── exporters/│   └── utils/│├── routes/│   ├── +layout.svelte│   ├── +page.svelte│   ││   ├── dashboard/│   ├── accounts/│   ├── records/│   ├── analytics/│   └── settings/
-```
-
----
-
-# 🔄 Flujos Iniciales
-
-## Crear Workspace
-
-```
-flowchart TD    A[Usuario abre app] --> B[Crear workspace]    B --> C[Guardar metadata]    C --> D[Crear categorías por defecto]    D --> E[Inicializar IndexedDB]    E --> F[Entrar al dashboard]
-```
-
----
-
-## Registrar Movimiento
-
-```
-flowchart TD    A[Usuario pulsa botón agregar] --> B[Selecciona tipo]    B --> C[Completa formulario]    C --> D[Validar datos]    D --> E[Guardar en IndexedDB]    E --> F[Actualizar dashboard]
-```
-
----
-
-## Exportar Datos
-
-```
-flowchart TD    A[Usuario exporta workspace] --> B[Leer datos IndexedDB]    B --> C[Segmentar por períodos]    C --> D[Construir JSON]    D --> E[Descargar backup]
-```
-
----
-
-# 🎯 Objetivo del MVP
-
-El objetivo inicial es validar:
-
-## ✅ Hábito de uso
-
-¿Las personas realmente registran sus movimientos constantemente?
-
----
-
-## ✅ Velocidad de registro
-
-¿La experiencia es suficientemente rápida y agradable?
-
----
-
-## ✅ Valor percibido
-
-¿Los usuarios consideran útil una herramienta:
-
-- privada
-- simple
-- offline
-- local-first?
-
----
-
-# 🚀 Visión Futura
-
-Posibles evoluciones futuras:
-
-- sincronización opcional
-- integración IA
-- insights automáticos
-- análisis predictivo
-- importación bancaria
-- presupuestos avanzados
-- widgets móviles
-- empaquetado nativo (Capacitor)
-
----
-
-# 📌 Estado Actual
-
-Proyecto en etapa inicial de diseño y construcción del MVP.
+Sincronización cloud, multiusuario, auth, conexión bancaria, OCR, presupuestos, inversiones, notificaciones.

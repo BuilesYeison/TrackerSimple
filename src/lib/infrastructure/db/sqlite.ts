@@ -2,7 +2,7 @@ import { CapacitorSQLite, SQLiteConnection } from '@capacitor-community/sqlite';
 import type { SQLiteDBConnection } from '@capacitor-community/sqlite/dist/esm/definitions';
 
 const sqliteConnection = new SQLiteConnection(CapacitorSQLite);
-const DB_NAME = 'personalfinapp';
+const DB_NAME = 'trackersimple';
 const TARGET_VERSION = 2;
 let db: SQLiteDBConnection | null = null;
 

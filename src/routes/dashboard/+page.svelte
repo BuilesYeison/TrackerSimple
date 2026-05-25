@@ -2,6 +2,7 @@
 	import { onMount } from "svelte";
 	import { goto } from "$app/navigation";
 	import { Plus } from "@lucide/svelte";
+	import { toast } from "svelte-sonner";
 	import {
 		accountService,
 		categoryService,
@@ -26,28 +27,32 @@
 	let currency = $state("COP");
 	let recentRecords = $state<Record[]>([]);
 	let loading = $state(true);
+	let error = $state("");
 
 	const today = new Date();
 
 	onMount(async () => {
-		await workspaceReady;
-		accounts = await accountService.getActive();
-		categories = await categoryService.getAll();
-		currency = await settingsService.getCurrency();
+		try {
+			await workspaceReady;
+			accounts = await accountService.getActive();
+			categories = await categoryService.getAll();
+			currency = await settingsService.getCurrency();
 
-		const { from, to } = getMonthRange(
-			today.getFullYear(),
-			today.getMonth(),
-		);
-		monthRecords = await recordService.getByDateRange(from, to);
+			const { from, to } = getMonthRange(today.getFullYear(), today.getMonth());
+			monthRecords = await recordService.getByDateRange(from, to);
 
-		const balanceMap = new Map<string, number>();
-		for (const acc of accounts) {
-			balanceMap.set(acc.id, await calcBalance(acc, recordService));
+			const balanceMap = new Map<string, number>();
+			for (const acc of accounts) {
+				balanceMap.set(acc.id, await calcBalance(acc, recordService));
+			}
+			balances = balanceMap;
+			recentRecords = await recordService.getRecent(5);
+		} catch (err) {
+			error = err instanceof Error ? err.message : "Error al cargar datos";
+			toast.error(error);
+		} finally {
+			loading = false;
 		}
-		balances = balanceMap;
-		recentRecords = await recordService.getRecent(5);
-		loading = false;
 	});
 
 	const totalBalance = $derived.by(() => {
@@ -97,6 +102,23 @@
 
 <div class="flex flex-col h-full max-w-md mx-auto">
 	<div class="flex-1 overflow-y-auto flex flex-col gap-6">
+		{#if loading}
+			<div class="py-12">
+				<div class="h-16 animate-pulse rounded-xl bg-surface mb-4"></div>
+				<div class="h-20 animate-pulse rounded-xl bg-surface mb-4"></div>
+				<div class="h-32 animate-pulse rounded-xl bg-surface"></div>
+			</div>
+		{:else if error}
+			<div class="flex flex-col items-center gap-3 py-12">
+				<span class="text-sm text-expense">{error}</span>
+				<button
+					onclick={() => window.location.reload()}
+					class="rounded-lg bg-surface-raised px-4 py-2 text-sm text-foreground transition-colors hover:opacity-80"
+				>
+					Reintentar
+				</button>
+			</div>
+		{:else}
 		<BalanceTotal balance={totalBalance} {currency} />
 
 		<MonthSummary
@@ -139,9 +161,10 @@
 				Sin movimientos este mes
 			</div>
 		{/if}
-	</div>
+	{/if}
+</div>
 
-	<div
+<div
 		class="flex-shrink-0 px-4 py-3"
 		style="padding-bottom: calc(0.75rem + env(safe-area-inset-bottom))"
 	>

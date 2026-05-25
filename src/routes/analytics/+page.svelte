@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { onMount } from "svelte";
+	import { toast } from "svelte-sonner";
 	import { accountService, categoryService, recordService, workspaceReady } from "$lib/presentation/stores/workspace";
 	import { groupByMonth, cumulativeBalance, topExpenseCategories, getMonthRange, sanitizeMonthlyData, sanitizeCumulData } from "$lib/utils/analytics-calc";
 	import type { Account, Category, Record } from "$lib/domain/entities";
@@ -9,13 +10,20 @@
 	let categories = $state<Category[]>([]);
 	let allRecords = $state<Record[]>([]);
 	let loading = $state(true);
+	let error = $state("");
 
 	onMount(async () => {
-		await workspaceReady;
-		accounts = await accountService.getActive();
-		categories = await categoryService.getAll();
-		await loadData();
-		loading = false;
+		try {
+			await workspaceReady;
+			accounts = await accountService.getActive();
+			categories = await categoryService.getAll();
+			await loadData();
+		} catch (err) {
+			error = err instanceof Error ? err.message : "Error al cargar datos";
+			toast.error(error);
+		} finally {
+			loading = false;
+		}
 	});
 
 	async function loadData() {
@@ -28,8 +36,13 @@
 	async function changePeriod(p: "3m" | "6m" | "year") {
 		period = p;
 		loading = true;
-		await loadData();
-		loading = false;
+		try {
+			await loadData();
+		} catch (err) {
+			toast.error(err instanceof Error ? err.message : "Error al cargar");
+		} finally {
+			loading = false;
+		}
 	}
 
 	const months = $derived(getMonthRange(period));
@@ -95,7 +108,15 @@
 		<button class="rounded-xl py-2 text-sm font-medium transition-colors {period === 'year' ? 'bg-primary text-primary-foreground' : 'text-muted'}" onclick={() => changePeriod("year")}>Este año</button>
 	</div>
 
-	{#if loading}
+	{#if error}
+		<div class="flex flex-col items-center gap-3 py-12">
+			<span class="text-sm text-expense">{error}</span>
+			<button
+				onclick={() => window.location.reload()}
+				class="rounded-lg bg-surface-raised px-4 py-2 text-sm text-foreground transition-colors hover:opacity-80"
+			>Reintentar</button>
+		</div>
+	{:else if loading}
 		<div class="flex flex-col gap-4">
 			<div class="h-20 animate-pulse rounded-xl bg-surface"></div>
 			<div class="h-40 animate-pulse rounded-xl bg-surface"></div>

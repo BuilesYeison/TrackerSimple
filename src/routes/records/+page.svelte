@@ -24,16 +24,21 @@
 	let accounts: Account[] = $state([]);
 	let categories: Category[] = $state([]);
 	let cache = $state(new Map<string, Record[]>());
+	let loading = $state(true);
+	let error = $state("");
 
 	onMount(async () => {
-		await workspaceReady;
-		accounts = await accountService.getAll();
-		categories = await categoryService.getAll();
-		await loadMonthRange(
-			currentDate.getFullYear(),
-			currentDate.getMonth(),
-			3,
-		);
+		try {
+			await workspaceReady;
+			accounts = await accountService.getAll();
+			categories = await categoryService.getAll();
+			await loadMonthRange(currentDate.getFullYear(), currentDate.getMonth(), 3);
+		} catch (err) {
+			error = err instanceof Error ? err.message : "Error al cargar datos";
+			toast.error(error);
+		} finally {
+			loading = false;
+		}
 	});
 
 	async function loadMonthRange(year: number, month: number, count: number) {
@@ -138,6 +143,21 @@
 </script>
 
 <div class="flex flex-col h-full max-w-md mx-auto">
+	{#if loading}
+		<div class="flex flex-col gap-4 p-4">
+			<div class="h-10 animate-pulse rounded-xl bg-surface"></div>
+			<div class="h-10 animate-pulse rounded-xl bg-surface"></div>
+			<div class="h-64 animate-pulse rounded-xl bg-surface"></div>
+		</div>
+	{:else if error}
+		<div class="flex flex-col items-center gap-3 py-12">
+			<span class="text-sm text-expense">{error}</span>
+			<button
+				onclick={() => window.location.reload()}
+				class="rounded-lg bg-surface-raised px-4 py-2 text-sm text-foreground transition-colors hover:opacity-80"
+			>Reintentar</button>
+		</div>
+	{:else}
 	<div class="flex items-center justify-between months-navigation">
 		<button
 			onclick={() => navigateMonth(-1)}
@@ -246,4 +266,5 @@
 			Crear registro
 		</button>
 	</div>
+{/if}
 </div>

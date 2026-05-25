@@ -17,10 +17,8 @@
 	let loading = $state(true);
 
 	onMount(async () => {
-		console.log("Getting accounts");
 		await workspaceReady;
 		const activeAccounts = await accountService.getActive();
-		console.log(activeAccounts);
 		const balanceMap = new Map<string, number>();
 		const promises = activeAccounts.map(async (acc) => {
 			const b = await calcBalance(acc, recordService);

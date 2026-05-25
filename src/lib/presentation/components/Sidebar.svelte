@@ -15,7 +15,7 @@
 	}
 </script>
 
-<nav class="flex h-16 items-center justify-around border-t border-border bg-background">
+<nav class="flex h-16 items-center justify-around border-t border-border bg-background" style="padding-bottom: env(safe-area-inset-bottom, 0)">
 	{#each navItems as { href, label, icon: Icon } (href)}
 		<a
 			{href}

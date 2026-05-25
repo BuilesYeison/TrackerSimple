@@ -12,7 +12,7 @@ export async function initDatabase(): Promise<void> {
 	if (isConn) {
 		db = await sqliteConnection.retrieveConnection(DB_NAME, false);
 	} else {
-		db = await sqliteConnection.createConnection(DB_NAME, false, 'no-encryption', 1, false);
+		db = await sqliteConnection.createConnection(DB_NAME, false, 'no-encryption', TARGET_VERSION, false);
 	}
 
 	await db.open();

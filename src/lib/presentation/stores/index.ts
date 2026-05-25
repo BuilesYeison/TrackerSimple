@@ -1,1 +1,1 @@
-export { initWorkspace, isReady, accountService, categoryService, recordService } from './workspace';
+export { initWorkspace, accountService, categoryService, recordService } from './workspace';

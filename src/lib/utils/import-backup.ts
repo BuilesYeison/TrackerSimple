@@ -1,4 +1,13 @@
 import { getDB } from "$lib/infrastructure/db/sqlite";
+import type { capSQLiteSet } from '@capacitor-community/sqlite/dist/esm/definitions';
+
+async function sha256(data: string): Promise<string> {
+	const encoder = new TextEncoder();
+	const buffer = encoder.encode(data);
+	const hashBuffer = await crypto.subtle.digest('SHA-256', buffer);
+	const hashArray = Array.from(new Uint8Array(hashBuffer));
+	return hashArray.map((b) => b.toString(16).padStart(2, '0')).join('');
+}
 
 export async function importBackupFromFile(file: File): Promise<void> {
 	const text = await file.text();
@@ -47,51 +56,54 @@ export async function importBackupFromFile(file: File): Promise<void> {
 		}
 	}
 
-	const db = getDB();
-
-	await db.execute("BEGIN TRANSACTION");
-
-	try {
-		await db.execute("DELETE FROM accounts");
-		await db.execute("DELETE FROM categories");
-		await db.execute("DELETE FROM records");
-
-		for (const a of accounts) {
-			const acc = a as Record<string, unknown>;
-			await db.run(
-				`INSERT INTO accounts (id, name, type, currency, balance, isActive, createdAt, updatedAt) VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
-				[acc.id, acc.name, acc.type, acc.currency ?? "COP", acc.balance ?? 0, (acc as any).isActive ? 1 : 0, acc.createdAt ?? new Date().toISOString(), acc.updatedAt ?? new Date().toISOString()],
-			);
+	if (data.checksum && typeof data.checksum === 'string') {
+		const embeddedChecksum = data.checksum;
+		const { checksum: _, ...dataWithoutChecksum } = data;
+		const computedChecksum = await sha256(JSON.stringify(dataWithoutChecksum, null, 2));
+		if (computedChecksum !== embeddedChecksum) {
+			throw new Error("El checksum del backup no coincide. El archivo puede estar corrupto o modificado.");
 		}
-
-		for (const c of categories) {
-			const cat = c as Record<string, unknown>;
-			await db.run(
-				`INSERT INTO categories (id, name, type, isDefault, createdAt, updatedAt) VALUES (?, ?, ?, ?, ?, ?)`,
-				[cat.id, cat.name, cat.type, (cat as any).isDefault ? 1 : 0, cat.createdAt ?? new Date().toISOString(), cat.updatedAt ?? new Date().toISOString()],
-			);
-		}
-
-		for (const [_month, recs] of Object.entries(records)) {
-			for (const r of recs) {
-				const rec = r as Record<string, unknown>;
-				await db.run(
-					`INSERT INTO records (id, type, amount, accountId, toAccountId, categoryId, note, tag, date, createdAt, updatedAt) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-					[rec.id, rec.type, rec.amount, rec.accountId, rec.toAccountId ?? null, rec.categoryId, rec.note ?? null, rec.tag ?? null, rec.date instanceof Date ? (rec.date as Date).toISOString() : String(rec.date), rec.createdAt instanceof Date ? (rec.createdAt as Date).toISOString() : String(rec.createdAt), rec.updatedAt instanceof Date ? (rec.updatedAt as Date).toISOString() : String(rec.updatedAt)],
-				);
-			}
-		}
-
-		if (settings) {
-			await db.run(
-				`INSERT OR REPLACE INTO settings (key, currency, onboardingCompleted, lastBackupAt) VALUES (?, ?, ?, ?)`,
-				[settings.key, settings.currency, (settings as any).onboardingCompleted ? 1 : 0, settings.lastBackupAt ?? null],
-			);
-		}
-
-		await db.execute("COMMIT");
-	} catch (err) {
-		await db.execute("ROLLBACK");
-		throw err;
 	}
+
+	const db = getDB();
+	const statements: capSQLiteSet[] = [];
+
+	statements.push({ statement: "DELETE FROM accounts", values: [] });
+	statements.push({ statement: "DELETE FROM categories", values: [] });
+	statements.push({ statement: "DELETE FROM records", values: [] });
+
+	for (const a of accounts) {
+		const acc = a as Record<string, unknown>;
+		statements.push({
+			statement: `INSERT INTO accounts (id, name, type, currency, balance, isActive, createdAt, updatedAt) VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+			values: [acc.id, acc.name, acc.type, acc.currency ?? "COP", acc.balance ?? 0, (acc as any).isActive ? 1 : 0, acc.createdAt ?? new Date().toISOString(), acc.updatedAt ?? new Date().toISOString()],
+		});
+	}
+
+	for (const c of categories) {
+		const cat = c as Record<string, unknown>;
+		statements.push({
+			statement: `INSERT INTO categories (id, name, type, isDefault, createdAt, updatedAt) VALUES (?, ?, ?, ?, ?, ?)`,
+			values: [cat.id, cat.name, cat.type, (cat as any).isDefault ? 1 : 0, cat.createdAt ?? new Date().toISOString(), cat.updatedAt ?? new Date().toISOString()],
+		});
+	}
+
+	for (const [_month, recs] of Object.entries(records)) {
+		for (const r of recs) {
+			const rec = r as Record<string, unknown>;
+			statements.push({
+				statement: `INSERT INTO records (id, type, amount, accountId, toAccountId, categoryId, note, tag, date, createdAt, updatedAt) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+				values: [rec.id, rec.type, rec.amount, rec.accountId, rec.toAccountId ?? null, rec.categoryId, rec.note ?? null, rec.tag ?? null, rec.date instanceof Date ? (rec.date as Date).toISOString() : String(rec.date), rec.createdAt instanceof Date ? (rec.createdAt as Date).toISOString() : String(rec.createdAt), rec.updatedAt instanceof Date ? (rec.updatedAt as Date).toISOString() : String(rec.updatedAt)],
+			});
+		}
+	}
+
+	if (settings) {
+		statements.push({
+			statement: `INSERT OR REPLACE INTO settings (key, currency, onboardingCompleted, lastBackupAt) VALUES (?, ?, ?, ?)`,
+			values: [settings.key, settings.currency, (settings as any).onboardingCompleted ? 1 : 0, settings.lastBackupAt ?? null],
+		});
+	}
+
+	await db.executeSet(statements);
 }

@@ -3,7 +3,7 @@ import type { AppSettings } from '../../domain/entities/AppSettings';
 import type { IAppSettingsRepository } from '../../domain/repositories/IAppSettingsRepository';
 
 export class SettingsService {
-	constructor(private repo: IAppSettingsRepository) {}
+	constructor(private repo: IAppSettingsRepository) { }
 
 	async getCurrency(): Promise<Currency> {
 		const settings = await this.repo.get();

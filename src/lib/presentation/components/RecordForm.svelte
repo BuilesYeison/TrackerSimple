@@ -277,7 +277,7 @@
 			>
 				<option value="" disabled>Selecciona cuenta</option>
 				{#each accounts as a (a.id)}
-					<option value={a.id}>{a.name} ({a.currency})</option>
+					<option value={a.id}>{a.name}</option>
 				{/each}
 			</select>
 		</label>

@@ -1,5 +1,4 @@
 <script lang="ts">
-	import { ArrowLeft } from "@lucide/svelte";
 	import RecordForm from "$lib/presentation/components/RecordForm.svelte";
 </script>
 

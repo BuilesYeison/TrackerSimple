@@ -35,6 +35,11 @@
 
 	onMount(async () => {
 		try {
+			const completed = await settingsService.isOnboardingCompleted();
+			if (!completed) {
+				goto("/onboarding", { replaceState: true });
+				return;
+			}
 			await workspaceReady;
 			accounts = await accountService.getActive();
 			categories = await categoryService.getAll();

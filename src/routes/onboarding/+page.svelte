@@ -33,7 +33,9 @@
 			toast.success("Backup importado");
 			setTimeout(() => goto("/dashboard"), 400);
 		} catch (err) {
-			toast.error(err instanceof Error ? err.message : "Error al importar");
+			toast.error(
+				err instanceof Error ? err.message : "Error al importar",
+			);
 		} finally {
 			importing = false;
 			confirmOpen = false;
@@ -59,7 +61,9 @@
 			await settingsService.setCurrency(currency);
 			step = 4;
 		} catch (err) {
-			toast.error(err instanceof Error ? err.message : "Error al guardar");
+			toast.error(
+				err instanceof Error ? err.message : "Error al guardar",
+			);
 		} finally {
 			saving = false;
 		}
@@ -75,7 +79,9 @@
 			await settingsService.completeOnboarding();
 			goto("/dashboard");
 		} catch (err) {
-			toast.error(err instanceof Error ? err.message : "Error al finalizar");
+			toast.error(
+				err instanceof Error ? err.message : "Error al finalizar",
+			);
 		} finally {
 			saving = false;
 		}
@@ -87,24 +93,39 @@
 		{#if step === 1}
 			<div class="flex flex-col gap-6 text-center">
 				<div>
-					<h1 class="text-2xl font-bold">Tus finanzas, simples y privadas</h1>
+					<h1 class="text-2xl font-bold">
+						Tus finanzas, simples y privadas
+					</h1>
 					<p class="mt-3 text-sm text-muted leading-relaxed">
-						Registrá gastos, ingresos y transferencias en segundos. Todo queda en tu dispositivo — sin cuentas, sin servidores, sin complicaciones.
+						Registra gastos, ingresos y transferencias en segundos.
+						Todo queda en tu dispositivo — sin cuentas, sin
+						servidores, sin complicaciones.
 					</p>
 				</div>
 				<button
-					onclick={() => { step = 2; }}
+					onclick={() => {
+						step = 2;
+					}}
 					class="w-full rounded-xl bg-primary px-4 py-3 text-sm font-medium text-primary-foreground transition-colors hover:opacity-90"
 				>
 					Comenzar
 				</button>
 
 				<div class="flex flex-col gap-2 pt-2">
-					<span class="text-xs text-muted">¿Ya tenés un backup?</span>
-					<label class="flex items-center justify-center gap-2 cursor-pointer text-sm text-muted hover:text-foreground transition-colors">
+					<span class="text-xs text-muted">¿Ya tienes un backup?</span
+					>
+					<label
+						class="flex items-center justify-center gap-2 cursor-pointer text-sm text-muted hover:text-foreground transition-colors"
+					>
 						<Upload size={14} />
 						{importing ? "Importando..." : "Importar backup"}
-						<input type="file" accept=".json" class="hidden" onchange={handleFileSelected} disabled={importing} />
+						<input
+							type="file"
+							accept=".json"
+							class="hidden"
+							onchange={handleFileSelected}
+							disabled={importing}
+						/>
 					</label>
 				</div>
 			</div>
@@ -113,17 +134,23 @@
 				<div>
 					<h1 class="text-2xl font-bold">Tus datos, tu control</h1>
 					<p class="mt-3 text-sm text-muted leading-relaxed">
-						Tus finanzas se guardan solo en este dispositivo. Nadie más puede verlas — ni siquiera nosotros.
+						Tus finanzas se guardan solo en este dispositivo. Nadie
+						más puede verlas — ni siquiera nosotros.
 					</p>
 					<p class="mt-2 text-sm text-muted leading-relaxed">
-						Vos decidís cuándo exportar un backup. Si cambiás de celular o desinstalás la app sin hacer backup, perdés tus datos para siempre.
+						Tú decides cuándo exportar un backup. Si cambias de
+						celular o desinstalas la app sin hacer backup, perderás
+						tus datos para siempre.
 					</p>
 					<p class="mt-2 text-sm text-muted leading-relaxed">
-						Podés exportar e importar backups desde Ajustes en cualquier momento.
+						Puedes exportar e importar backups desde Ajustes en
+						cualquier momento.
 					</p>
 				</div>
 				<button
-					onclick={() => { step = 3; }}
+					onclick={() => {
+						step = 3;
+					}}
 					class="w-full rounded-xl bg-primary px-4 py-3 text-sm font-medium text-primary-foreground transition-colors hover:opacity-90"
 				>
 					Entendido
@@ -132,8 +159,10 @@
 		{:else if step === 3}
 			<div class="flex flex-col gap-6 text-center">
 				<div>
-					<h1 class="text-2xl font-bold">¿Qué moneda usás?</h1>
-					<p class="mt-2 text-sm text-muted">Seleccioná la moneda principal para tus cuentas</p>
+					<h1 class="text-2xl font-bold">¿Qué moneda usas?</h1>
+					<p class="mt-2 text-sm text-muted">
+						Selecciona la moneda principal para tus cuentas
+					</p>
 				</div>
 				<select
 					bind:value={currency}
@@ -158,8 +187,10 @@
 		{:else if step === 4}
 			<div class="flex flex-col gap-4">
 				<div class="text-center">
-					<h1 class="text-2xl font-bold">Creá tu primera cuenta</h1>
-					<p class="mt-2 text-sm text-muted">Necesitás al menos una cuenta para empezar</p>
+					<h1 class="text-2xl font-bold">Crea tu primera cuenta</h1>
+					<p class="mt-2 text-sm text-muted">
+						Necesitas al menos una cuenta para empezar
+					</p>
 				</div>
 				<AccountForm mode="create" onsuccess={onAccountCreated} />
 			</div>
@@ -186,7 +217,8 @@
 		<AlertDialog.Header>
 			<AlertDialog.Title>¿Importar backup?</AlertDialog.Title>
 			<AlertDialog.Description>
-				Esto reemplazará todos tus datos actuales. Esta acción no se puede deshacer.
+				Esto reemplazará todos tus datos actuales. Esta acción no se
+				puede deshacer.
 			</AlertDialog.Description>
 		</AlertDialog.Header>
 		<AlertDialog.Footer>

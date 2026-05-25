@@ -1,6 +1,6 @@
 <script lang="ts">
 	import type { Record } from "$lib/domain/entities";
-	import { getCategoryIcon } from "$lib/category-icons";
+	import { getCategoryIcon } from "$lib/utils/category-icons";
 	import { ArrowLeftRight } from "@lucide/svelte";
 	import * as AlertDialog from "$lib/components/ui/alert-dialog/index.js";
 

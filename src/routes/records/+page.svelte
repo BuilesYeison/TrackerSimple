@@ -13,7 +13,7 @@
 		formatGroupDate,
 		getMonthRange,
 		formatMonthLabel,
-	} from "$lib/date-format";
+	} from "$lib/utils/date-format";
 	import RecordItem from "$lib/presentation/components/RecordItem.svelte";
 	import type { Account } from "$lib/domain/entities";
 	import type { Category } from "$lib/domain/entities";

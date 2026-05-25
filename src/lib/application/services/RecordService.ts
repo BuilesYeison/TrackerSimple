@@ -39,7 +39,6 @@ export class RecordService {
 	async getRecent(limit = 5): Promise<Record[]> {
 		const all = await this.repo.findAll();
 		return all
-			.filter((r) => r.date instanceof Date || r.createdAt instanceof Date)
 			.sort((a, b) => {
 				const ad = a.date instanceof Date ? a.date : a.createdAt;
 				const bd = b.date instanceof Date ? b.date : b.createdAt;

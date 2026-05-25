@@ -48,7 +48,3 @@ export async function reconnectDatabase(): Promise<void> {
 		await initDatabase();
 	}
 }
-
-export function isReady(): boolean {
-	return ready;
-}

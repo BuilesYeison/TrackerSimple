@@ -2,7 +2,7 @@
 	import { onMount } from "svelte";
 	import { toast } from "svelte-sonner";
 	import { accountService, categoryService, recordService, workspaceReady } from "$lib/presentation/stores/workspace";
-	import { groupByMonth, cumulativeBalance, topExpenseCategories, getMonthRange, sanitizeMonthlyData, sanitizeCumulData } from "$lib/utils/analytics-calc";
+	import { groupByMonth, cumulativeBalance, topExpenseCategories, getMonthRangeLabels, sanitizeMonthlyData, sanitizeCumulData } from "$lib/utils/analytics-calc";
 	import type { Account, Category, Record } from "$lib/domain/entities";
 
 	let period = $state<"3m" | "6m" | "year">("6m");
@@ -27,7 +27,7 @@
 	});
 
 	async function loadData() {
-		const months = getMonthRange(period);
+		const months = getMonthRangeLabels(period);
 		const from = months[0];
 		const to = new Date(months[months.length - 1].getFullYear(), months[months.length - 1].getMonth() + 1, 0, 23, 59, 59);
 		allRecords = await recordService.getByDateRange(from, to);
@@ -45,7 +45,7 @@
 		}
 	}
 
-	const months = $derived(getMonthRange(period));
+	const months = $derived(getMonthRangeLabels(period));
 	const rawMonthly = $derived(groupByMonth(allRecords, months));
 	const rawCumul = $derived(cumulativeBalance(allRecords, accounts, months));
 	const categoryData = $derived(topExpenseCategories(allRecords, categories));

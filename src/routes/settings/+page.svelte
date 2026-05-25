@@ -162,17 +162,6 @@
 		}
 	}
 
-	function blobToBase64(blob: Blob): Promise<string> {
-		return new Promise((resolve) => {
-			const reader = new FileReader();
-			reader.onloadend = () => {
-				const result = reader.result as string;
-				resolve(result.split(",")[1]);
-			};
-			reader.readAsDataURL(blob);
-		});
-	}
-
 	function handleFileSelected(e: Event) {
 		const input = e.target as HTMLInputElement;
 		const file = input.files?.[0];

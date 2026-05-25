@@ -102,7 +102,7 @@ export function topExpenseCategories(
 	return result;
 }
 
-export function getMonthRange(period: "3m" | "6m" | "year"): Date[] {
+export function getMonthRangeLabels(period: "3m" | "6m" | "year"): Date[] {
 	const now = new Date();
 	const months: Date[] = [];
 

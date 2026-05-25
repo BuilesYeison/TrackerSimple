@@ -11,7 +11,7 @@
 		workspaceReady,
 	} from "$lib/presentation/stores/workspace";
 	import { calcBalance } from "$lib/utils/balance";
-	import { getMonthRange, formatMonthLabel } from "$lib/date-format";
+	import { getMonthRange, formatMonthLabel } from "$lib/utils/date-format";
 	import BalanceTotal from "$lib/presentation/components/BalanceTotal.svelte";
 	import MonthSummary from "$lib/presentation/components/MonthSummary.svelte";
 	import TopCategories from "$lib/presentation/components/TopCategories.svelte";

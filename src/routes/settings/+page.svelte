@@ -7,9 +7,10 @@
 	import {
 		settingsService,
 		workspaceReady,
+		exportService,
+		importService,
 	} from "$lib/presentation/stores/workspace";
-	import { getDB, closeDatabase } from "$lib/infrastructure/db/sqlite";
-	import { importBackupFromFile } from "$lib/utils/import-backup";
+	import { closeDatabase } from "$lib/infrastructure/db/sqlite";
 	import type { Currency } from "$lib/domain/entities";
 	import { Capacitor } from "@capacitor/core";
 	import { Filesystem, Directory, Encoding } from "@capacitor/filesystem";
@@ -74,39 +75,7 @@
 	async function handleExport() {
 		exporting = true;
 		try {
-			const db = getDB();
-			const accounts =
-				(await db.query("SELECT * FROM accounts")).values ?? [];
-			const categories =
-				(await db.query("SELECT * FROM categories")).values ?? [];
-			const settings =
-				(
-					await db.query("SELECT * FROM settings WHERE key = ?", [
-						"default",
-					])
-				).values?.[0] ?? null;
-			const allRecords =
-				(await db.query("SELECT * FROM records ORDER BY date ASC"))
-					.values ?? [];
-
-			const recordsByMonth: Record<string, object[]> = {};
-			for (const r of allRecords) {
-				const d = new Date(r.date);
-				const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
-				if (!recordsByMonth[key]) recordsByMonth[key] = [];
-				recordsByMonth[key].push(r);
-			}
-
-			const backup = {
-				version: "1.0",
-				exportedAt: new Date().toISOString(),
-				accounts,
-				categories,
-				settings,
-				records: recordsByMonth,
-			};
-
-			const json = JSON.stringify(backup, null, 2);
+			const json = await exportService.createBackup();
 
 			const now = new Date().toISOString();
 			const current = await settingsService.getSettings();
@@ -175,7 +144,7 @@
 		if (!pendingFile) return;
 		importing = true;
 		try {
-			await importBackupFromFile(pendingFile);
+			await importService.importFromFile(pendingFile);
 			toast.success("Datos importados correctamente");
 			await closeDatabase();
 			setTimeout(() => window.location.reload(), 800);

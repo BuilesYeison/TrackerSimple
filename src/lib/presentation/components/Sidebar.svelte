@@ -18,11 +18,11 @@
 <nav class="flex h-16 items-center justify-around border-t border-border bg-background" style="padding-bottom: env(safe-area-inset-bottom, 0)">
 	{#each navItems as { href, label, icon: Icon } (href)}
 		<a
-			{href}
-			class="flex flex-col items-center gap-1 px-3 py-2 text-xs transition-colors {isActive(href)
-				? 'text-income'
-				: 'text-muted hover:text-foreground'}"
-		>
+		{href}
+		class="flex flex-col items-center justify-center gap-1 min-w-[44px] min-h-[44px] text-xs transition-colors {isActive(href)
+			? 'text-income'
+			: 'text-muted hover:text-foreground'}"
+	>
 			<Icon class="size-5" />
 			<span>{label}</span>
 		</a>

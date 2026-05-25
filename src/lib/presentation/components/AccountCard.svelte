@@ -42,7 +42,7 @@
 	}
 </script>
 
-<div class="rounded-xl bg-surface overflow-hidden cursor-pointer" onclick={() => (expanded = !expanded)}>
+<div class="rounded-xl bg-surface overflow-hidden cursor-pointer" role="button" tabindex="0" aria-expanded={expanded} onclick={() => (expanded = !expanded)} onkeydown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); expanded = !expanded; } }}>
 	<div class="flex">
 		<div class="w-[3px] shrink-0 {barColor}"></div>
 		<div class="flex-1 px-4 py-3 flex items-center justify-between gap-3">
@@ -56,7 +56,7 @@
 	{#if expanded}
 		<div class="flex gap-2 px-4 pb-3">
 			<button
-				class="flex-1 rounded-lg bg-surface-raised px-3 py-2 text-sm text-foreground transition-colors hover:opacity-80"
+				class="flex-1 rounded-lg bg-surface-raised px-3 py-3 text-sm text-foreground transition-colors hover:opacity-80"
 				onclick={(e) => { e.stopPropagation(); onedit(); }}
 			>
 				Editar
@@ -64,7 +64,7 @@
 			<AlertDialog.Root bind:open={confirmOpen}>
 				<AlertDialog.Trigger>
 					<button
-						class="flex-1 rounded-lg bg-expense/10 px-3 py-2 text-sm text-expense transition-colors hover:opacity-80 disabled:opacity-50 w-full"
+						class="flex-1 rounded-lg bg-expense/10 px-3 py-3 text-sm text-expense transition-colors hover:opacity-80 disabled:opacity-50 w-full"
 						onclick={(e) => e.stopPropagation()}
 						disabled={deleting}
 					>

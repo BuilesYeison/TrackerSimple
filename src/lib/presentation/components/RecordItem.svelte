@@ -65,9 +65,18 @@
 </script>
 
 <div
-	class="cursor-pointer"
+	class="w-full text-left cursor-pointer"
+	role="button"
+	tabindex="0"
+	aria-expanded={expanded}
 	onclick={() => {
 		if (hasActions) expanded = !expanded;
+	}}
+	onkeydown={(e) => {
+		if ((e.key === 'Enter' || e.key === ' ') && hasActions) {
+			e.preventDefault();
+			expanded = !expanded;
+		}
 	}}
 >
 	<div class="flex items-center gap-3 py-2">
@@ -86,7 +95,7 @@
 		<div class="flex gap-2 pb-2">
 			{#if onedit}
 				<button
-					class="flex-1 rounded-lg bg-surface-raised px-3 py-2 text-sm text-foreground transition-colors hover:opacity-80"
+					class="flex-1 rounded-lg bg-surface-raised px-3 py-3 text-sm text-foreground transition-colors hover:opacity-80"
 					onclick={(e) => {
 						e.stopPropagation();
 						onedit();
@@ -97,7 +106,7 @@
 			{/if}
 			{#if ondelete}
 				<button
-					class="flex-1 rounded-lg bg-expense/10 px-3 py-2 text-sm text-expense transition-colors hover:opacity-80 disabled:opacity-50"
+					class="flex-1 rounded-lg bg-expense/10 px-3 py-3 text-sm text-expense transition-colors hover:opacity-80 disabled:opacity-50"
 					onclick={(e) => {
 						e.stopPropagation();
 						confirmOpen = true;

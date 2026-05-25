@@ -157,7 +157,7 @@
 	<div class="flex items-center justify-between months-navigation">
 		<button
 			onclick={() => navigateMonth(-1)}
-			class="rounded-lg p-2 text-foreground hover:bg-surface-raised transition-colors"
+			class="rounded-lg p-3 text-foreground hover:bg-surface-raised transition-colors"
 		>
 			<ChevronLeft size={20} />
 		</button>
@@ -165,7 +165,7 @@
 		{#if canGoForward}
 			<button
 				onclick={() => navigateMonth(1)}
-				class="rounded-lg p-2 text-foreground hover:bg-surface-raised transition-colors"
+				class="rounded-lg p-3 text-foreground hover:bg-surface-raised transition-colors"
 			>
 				<ChevronRight size={20} />
 			</button>

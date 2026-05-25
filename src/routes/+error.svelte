@@ -1,11 +1,15 @@
 <script lang="ts">
-	import { page } from "$app/stores";
+	let { data } = $props();
 </script>
 
-<div class="flex h-dvh flex-col items-center justify-center gap-6 bg-background p-6 text-center">
+<div
+	class="flex h-dvh flex-col items-center justify-center gap-6 bg-background p-6 text-center"
+>
 	<div>
 		<h1 class="text-2xl font-bold">Algo salió mal</h1>
-		<p class="mt-2 text-sm text-muted">Ocurrió un error inesperado. Intentá recargar la aplicación.</p>
+		<p class="mt-2 text-sm text-muted">
+			Ocurrió un error inesperado. Intentá recargar la aplicación.
+		</p>
 	</div>
 	<button
 		onclick={() => window.location.reload()}
@@ -13,7 +17,9 @@
 	>
 		Recargar
 	</button>
-	{#if page.status}
-		<div class="text-xs text-muted">Error {page.status}: {page.error?.message || ''}</div>
+	{#if data.status}
+		<div class="text-xs text-muted">
+			Error {data.status}: {data.error?.message || ""}
+		</div>
 	{/if}
 </div>

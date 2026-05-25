@@ -16,9 +16,11 @@
 	import MonthSummary from "$lib/presentation/components/MonthSummary.svelte";
 	import TopCategories from "$lib/presentation/components/TopCategories.svelte";
 	import RecordItem from "$lib/presentation/components/RecordItem.svelte";
-	import type { Account } from "$lib/domain/entities";
-	import type { Category } from "$lib/domain/entities";
-	import type { Record } from "$lib/domain/entities";
+	import {
+		lookupAccount as findAccount,
+		lookupCategory as findCategory,
+	} from "$lib/utils/lookup-helpers";
+	import type { Account, Category, Record } from "$lib/domain/entities";
 
 	let accounts = $state<Account[]>([]);
 	let categories: Category[] = $state([]);
@@ -38,7 +40,10 @@
 			categories = await categoryService.getAll();
 			currency = await settingsService.getCurrency();
 
-			const { from, to } = getMonthRange(today.getFullYear(), today.getMonth());
+			const { from, to } = getMonthRange(
+				today.getFullYear(),
+				today.getMonth(),
+			);
 			monthRecords = await recordService.getByDateRange(from, to);
 
 			const balanceMap = new Map<string, number>();
@@ -48,7 +53,8 @@
 			balances = balanceMap;
 			recentRecords = await recordService.getRecent(5);
 		} catch (err) {
-			error = err instanceof Error ? err.message : "Error al cargar datos";
+			error =
+				err instanceof Error ? err.message : "Error al cargar datos";
 			toast.error(error);
 		} finally {
 			loading = false;
@@ -91,12 +97,11 @@
 			.slice(0, 3);
 	});
 
-	function lookupAccount(id: string): string {
-		return accounts.find((a) => a.id === id)?.name ?? "—";
+	function lookupAccount(id: string) {
+		return findAccount(accounts, id);
 	}
-
-	function lookupCategory(id: string): string {
-		return categories.find((c) => c.id === id)?.name ?? "—";
+	function lookupCategory(id: string) {
+		return findCategory(categories, id);
 	}
 </script>
 
@@ -104,8 +109,12 @@
 	<div class="flex-1 overflow-y-auto flex flex-col gap-6">
 		{#if loading}
 			<div class="py-12">
-				<div class="h-16 animate-pulse rounded-xl bg-surface mb-4"></div>
-				<div class="h-20 animate-pulse rounded-xl bg-surface mb-4"></div>
+				<div
+					class="h-16 animate-pulse rounded-xl bg-surface mb-4"
+				></div>
+				<div
+					class="h-20 animate-pulse rounded-xl bg-surface mb-4"
+				></div>
 				<div class="h-32 animate-pulse rounded-xl bg-surface"></div>
 			</div>
 		{:else if error}
@@ -119,52 +128,52 @@
 				</button>
 			</div>
 		{:else}
-		<BalanceTotal balance={totalBalance} {currency} />
+			<BalanceTotal balance={totalBalance} {currency} />
 
-		<MonthSummary
-			income={monthIncome}
-			expense={monthExpense}
-			period={formatMonthLabel(today)}
-		/>
+			<MonthSummary
+				income={monthIncome}
+				expense={monthExpense}
+				period={formatMonthLabel(today)}
+			/>
 
-		<TopCategories categories={topCategories} />
+			<TopCategories categories={topCategories} />
 
-		<div class="flex items-center justify-between">
-			<h2 class="text-sm font-medium text-foreground">
-				Últimos movimientos
-			</h2>
-			<a
-				href="/records"
-				class="text-xs text-muted hover:text-foreground transition-colors"
-			>
-				Ver todos
-			</a>
-		</div>
-
-		{#if recentRecords.length > 0}
-			<div class="divide-y divide-border -mt-3">
-				{#each recentRecords as record (record.id)}
-					<RecordItem
-						{record}
-						accountName={lookupAccount(record.accountId)}
-						categoryName={record.type === "transfer"
-							? ""
-							: lookupCategory(record.categoryId)}
-						toAccountName={record.toAccountId
-							? lookupAccount(record.toAccountId)
-							: undefined}
-					/>
-				{/each}
+			<div class="flex items-center justify-between">
+				<h2 class="text-sm font-medium text-foreground">
+					Últimos movimientos
+				</h2>
+				<a
+					href="/records"
+					class="text-xs text-muted hover:text-foreground transition-colors"
+				>
+					Ver todos
+				</a>
 			</div>
-		{:else}
-			<div class="py-8 text-center text-muted text-sm">
-				Sin movimientos este mes
-			</div>
+
+			{#if recentRecords.length > 0}
+				<div class="divide-y divide-border -mt-3">
+					{#each recentRecords as record (record.id)}
+						<RecordItem
+							{record}
+							accountName={lookupAccount(record.accountId)}
+							categoryName={record.type === "transfer"
+								? ""
+								: lookupCategory(record.categoryId)}
+							toAccountName={record.toAccountId
+								? lookupAccount(record.toAccountId)
+								: undefined}
+						/>
+					{/each}
+				</div>
+			{:else}
+				<div class="py-8 text-center text-muted text-sm">
+					Sin movimientos este mes
+				</div>
+			{/if}
 		{/if}
-	{/if}
-</div>
+	</div>
 
-<div
+	<div
 		class="flex-shrink-0 px-4 py-3"
 		style="padding-bottom: calc(0.75rem + env(safe-area-inset-bottom))"
 	>

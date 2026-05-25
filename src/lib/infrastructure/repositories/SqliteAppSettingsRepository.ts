@@ -1,13 +1,15 @@
+import type { Currency } from '$lib/domain/entities/enums';
 import type { AppSettings } from '../../domain/entities/AppSettings';
 import type { IAppSettingsRepository } from '../../domain/repositories/IAppSettingsRepository';
 import { getDB } from '../db/sqlite';
+import { type SqliteRow } from '../db/sqlite-helpers';
 
-function mapRow(row: any): AppSettings {
+function mapRow(row: SqliteRow): AppSettings {
 	return {
-		key: row.key,
-		currency: row.currency,
+		key: row.key as string,
+		currency: row.currency as Currency,
 		onboardingCompleted: Boolean(row.onboardingCompleted),
-		lastBackupAt: row.lastBackupAt || undefined,
+		lastBackupAt: (row.lastBackupAt as string | undefined) || undefined,
 	};
 }
 

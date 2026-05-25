@@ -1,19 +1,16 @@
-import type { Category } from '../../domain/entities';
+import type { Category, CategoryType } from '../../domain/entities';
 import type { ICategoryRepository } from '../../domain/repositories';
 import { getDB } from '../db/sqlite';
+import { toISO, type SqliteRow } from '../db/sqlite-helpers';
 
-function toISO(d: Date): string {
-	return d.toISOString();
-}
-
-function mapRow(row: any): Category {
+function mapRow(row: SqliteRow): Category {
 	return {
-		id: row.id,
-		name: row.name,
-		type: row.type,
+		id: row.id as string,
+		name: row.name as string,
+		type: row.type as CategoryType,
 		isDefault: Boolean(row.isDefault),
-		createdAt: new Date(row.createdAt),
-		updatedAt: new Date(row.updatedAt),
+		createdAt: new Date(row.createdAt as string | number),
+		updatedAt: new Date(row.updatedAt as string | number),
 	};
 }
 

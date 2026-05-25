@@ -1,21 +1,19 @@
-import type { Account } from '../../domain/entities';
+import type { Account, AccountType, Currency } from '../../domain/entities';
 import type { IAccountRepository } from '../../domain/repositories';
 import { getDB } from '../db/sqlite';
+import { toISO, type SqliteRow } from '../db/sqlite-helpers';
 
-function toISO(d: Date): string {
-	return d.toISOString();
-}
-
-function mapRow(row: any): Account {
+function mapRow(row: SqliteRow): Account {
+	const typedRow = row as Record<string, unknown>;
 	return {
-		id: row.id,
-		name: row.name,
-		type: row.type,
-		currency: row.currency,
-		balance: Number(row.balance),
-		isActive: Boolean(row.isActive),
-		createdAt: new Date(row.createdAt),
-		updatedAt: new Date(row.updatedAt),
+		id: typedRow.id as string,
+		name: typedRow.name as string,
+		type: typedRow.type as AccountType,
+		currency: typedRow.currency as Currency,
+		balance: Number(typedRow.balance),
+		isActive: Boolean(typedRow.isActive),
+		createdAt: new Date(typedRow.createdAt as string | number),
+		updatedAt: new Date(typedRow.updatedAt as string | number),
 	};
 }
 

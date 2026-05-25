@@ -1,24 +1,21 @@
-import type { Record } from '../../domain/entities';
+import type { Record, RecordType } from '../../domain/entities';
 import type { IRecordRepository } from '../../domain/repositories';
 import { getDB } from '../db/sqlite';
+import { toISO, type SqliteRow } from '../db/sqlite-helpers';
 
-function toISO(d: Date): string {
-	return d.toISOString();
-}
-
-function mapRow(row: any): Record {
+function mapRow(row: SqliteRow): Record {
 	return {
-		id: row.id,
-		type: row.type,
+		id: row.id as string,
+		type: row.type as RecordType,
 		amount: Number(row.amount),
-		accountId: row.accountId,
-		toAccountId: row.toAccountId || null,
-		categoryId: row.categoryId,
-		note: row.note || null,
-		tag: row.tag || null,
-		date: new Date(row.date),
-		createdAt: new Date(row.createdAt),
-		updatedAt: new Date(row.updatedAt),
+		accountId: row.accountId as string,
+		toAccountId: (row.toAccountId as string | null) || null,
+		categoryId: row.categoryId as string,
+		note: (row.note as string | null) || null,
+		tag: (row.tag as string | null) || null,
+		date: new Date(row.date as string | number),
+		createdAt: new Date(row.createdAt as string | number),
+		updatedAt: new Date(row.updatedAt as string | number),
 	};
 }
 

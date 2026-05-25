@@ -15,6 +15,7 @@
 		formatMonthLabel,
 	} from "$lib/utils/date-format";
 	import RecordItem from "$lib/presentation/components/RecordItem.svelte";
+	import { lookupAccount as findAccount, lookupCategory as findCategory } from "$lib/utils/lookup-helpers";
 	import type { Account } from "$lib/domain/entities";
 	import type { Category } from "$lib/domain/entities";
 	import type { Record } from "$lib/domain/entities";
@@ -66,13 +67,8 @@
 		}
 	}
 
-	function lookupAccount(id: string): string {
-		return accounts.find((a) => a.id === id)?.name ?? "—";
-	}
-
-	function lookupCategory(id: string): string {
-		return categories.find((c) => c.id === id)?.name ?? "—";
-	}
+	function lookupAccount(id: string): string { return findAccount(accounts, id); }
+	function lookupCategory(id: string): string { return findCategory(categories, id); }
 
 	function handleEdit(record: Record) {
 		goto(`/records/${record.id}/edit`);

@@ -167,6 +167,7 @@
 
 	async function handlePickFolder() {
 		try {
+			console.log("picking");
 			const result = await SafPlugin.pickFolder();
 			console.log("picked");
 			safUri = result.uri;

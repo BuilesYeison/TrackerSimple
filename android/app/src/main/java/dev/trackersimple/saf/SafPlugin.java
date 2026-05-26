@@ -1,8 +1,10 @@
 package dev.trackersimple.saf;
 
-import android.app.Activity;
 import android.content.Intent;
 import android.net.Uri;
+
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
 
 import com.getcapacitor.JSObject;
 import com.getcapacitor.Plugin;
@@ -13,14 +15,37 @@ import com.getcapacitor.annotation.CapacitorPlugin;
 @CapacitorPlugin(name = "SafPlugin")
 public class SafPlugin extends Plugin {
 
-    private static final int PICK_FOLDER_REQUEST = 1001;
     private PluginCall pendingCall;
+    private ActivityResultLauncher<Uri> folderPickerLauncher;
+
+    @Override
+    public void load() {
+        folderPickerLauncher = getActivity().registerForActivityResult(
+            new ActivityResultContracts.OpenDocumentTree(),
+            uri -> {
+                if (pendingCall == null) return;
+
+                if (uri != null) {
+                    final int takeFlags = Intent.FLAG_GRANT_READ_URI_PERMISSION
+                            | Intent.FLAG_GRANT_WRITE_URI_PERMISSION;
+                    getContext().getContentResolver()
+                            .takePersistableUriPermission(uri, takeFlags);
+
+                    JSObject result = new JSObject();
+                    result.put("uri", uri.toString());
+                    pendingCall.resolve(result);
+                } else {
+                    pendingCall.reject("Selección cancelada");
+                }
+                pendingCall = null;
+            }
+        );
+    }
 
     @PluginMethod
     public void pickFolder(PluginCall call) {
         pendingCall = call;
-        Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT_TREE);
-        getActivity().startActivityForResult(intent, PICK_FOLDER_REQUEST);
+        folderPickerLauncher.launch(null);
     }
 
     @PluginMethod
@@ -78,27 +103,6 @@ public class SafPlugin extends Plugin {
             call.resolve(result);
         } catch (Exception e) {
             call.reject(e.getMessage());
-        }
-    }
-
-    @Override
-    protected void handleOnActivityResult(int requestCode, int resultCode, Intent data) {
-        super.handleOnActivityResult(requestCode, resultCode, data);
-
-        if (requestCode == PICK_FOLDER_REQUEST && pendingCall != null) {
-            if (resultCode == Activity.RESULT_OK && data != null && data.getData() != null) {
-                Uri treeUri = data.getData();
-
-                final int takeFlags = Intent.FLAG_GRANT_READ_URI_PERMISSION | Intent.FLAG_GRANT_WRITE_URI_PERMISSION;
-                getContext().getContentResolver().takePersistableUriPermission(treeUri, takeFlags);
-
-                JSObject result = new JSObject();
-                result.put("uri", treeUri.toString());
-                pendingCall.resolve(result);
-            } else {
-                pendingCall.reject("Selección cancelada");
-            }
-            pendingCall = null;
         }
     }
 }

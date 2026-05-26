@@ -2,6 +2,7 @@ import type { Record, RecordType } from '../../domain/entities';
 import type { IRecordRepository } from '../../domain/repositories';
 import { getDB } from '../db/sqlite';
 import { toISO, type SqliteRow } from '../db/sqlite-helpers';
+import { triggerSync } from '../../application/services/SyncService';
 
 function mapRow(row: SqliteRow): Record {
 	return {
@@ -27,6 +28,7 @@ export class SqliteRecordRepository implements IRecordRepository {
 			 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
 			[record.id, record.type, record.amount, record.accountId, record.toAccountId, record.categoryId, record.note, record.tag, toISO(record.date), toISO(record.createdAt), toISO(record.updatedAt)],
 		);
+		triggerSync();
 	}
 
 	async update(record: Record): Promise<void> {
@@ -35,6 +37,7 @@ export class SqliteRecordRepository implements IRecordRepository {
 			`UPDATE records SET type = ?, amount = ?, accountId = ?, toAccountId = ?, categoryId = ?, note = ?, tag = ?, date = ?, updatedAt = ? WHERE id = ?`,
 			[record.type, record.amount, record.accountId, record.toAccountId, record.categoryId, record.note, record.tag, toISO(record.date), toISO(new Date()), record.id],
 		);
+		triggerSync();
 	}
 
 	async findById(id: string): Promise<Record | null> {
@@ -79,5 +82,6 @@ export class SqliteRecordRepository implements IRecordRepository {
 	async delete(id: string): Promise<void> {
 		const db = getDB();
 		await db.run(`DELETE FROM records WHERE id = ?`, [id]);
+		triggerSync();
 	}
 }

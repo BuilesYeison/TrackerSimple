@@ -5,4 +5,6 @@ export interface AppSettings {
 	currency: Currency;
 	onboardingCompleted: boolean;
 	lastBackupAt?: string;
+	safUri?: string;
+	lastSyncAt?: string;
 }

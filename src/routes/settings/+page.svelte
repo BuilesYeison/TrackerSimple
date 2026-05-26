@@ -14,12 +14,16 @@
 	import type { Currency } from "$lib/domain/entities";
 	import { Capacitor } from "@capacitor/core";
 	import { Filesystem, Directory, Encoding } from "@capacitor/filesystem";
+	import { SafPlugin } from "$lib/plugins/saf";
 
 	let currency = $state<Currency>("COP");
 	let saving = $state(false);
 	let exporting = $state(false);
 	let importing = $state(false);
 	let lastBackupAt = $state<string | null>(null);
+	let safUri = $state<string | null>(null);
+	let lastSyncAt = $state<string | null>(null);
+	let syncing = $state(false);
 	let confirmOpen = $state(false);
 	let pendingFile = $state<File | null>(null);
 
@@ -28,6 +32,8 @@
 		currency = await settingsService.getCurrency();
 		const settings = await settingsService.getSettings();
 		lastBackupAt = settings?.lastBackupAt ?? null;
+		safUri = settings?.safUri ?? null;
+		lastSyncAt = settings?.lastSyncAt ?? null;
 	});
 
 	const daysSinceBackup = $derived(
@@ -158,6 +164,97 @@
 			confirmOpen = false;
 		}
 	}
+
+	async function handlePickFolder() {
+		try {
+			const result = await SafPlugin.pickFolder();
+			console.log("picked");
+			safUri = result.uri;
+			console.log(safUri);
+			const current = await settingsService.getSettings();
+			if (current) {
+				current.safUri = result.uri;
+				await settingsService.updateSettings(current);
+			}
+			toast.success("Carpeta configurada");
+		} catch (err) {
+			console.error(err);
+			if (err instanceof Error && err.message !== "Selección cancelada") {
+				toast.error(err.message);
+			}
+		}
+	}
+
+	async function handleChangeFolder() {
+		await handlePickFolder();
+	}
+
+	async function handleSyncNow() {
+		syncing = true;
+		try {
+			if (!safUri) {
+				toast.warning("Configurá una carpeta primero");
+				return;
+			}
+			const json = await exportService.createBackup();
+			await SafPlugin.writeFile({
+				uri: safUri,
+				name: "trackeo-backup.json",
+				data: json,
+			});
+			const now = new Date().toISOString();
+			const current = await settingsService.getSettings();
+			if (current) {
+				current.lastSyncAt = now;
+				await settingsService.updateSettings(current);
+			}
+			lastSyncAt = now;
+			toast.success("Sincronizado");
+		} catch (err) {
+			toast.error(
+				err instanceof Error ? err.message : "Error al sincronizar",
+			);
+		} finally {
+			syncing = false;
+		}
+	}
+
+	async function handleImportFromFolder() {
+		importing = true;
+		try {
+			if (!safUri) {
+				toast.warning("Configurá una carpeta primero");
+				return;
+			}
+			const result = await SafPlugin.readFile({
+				uri: safUri,
+				name: "trackeo-backup.json",
+			});
+			const blob = new Blob([result.data], { type: "application/json" });
+			const file = new File([blob], "trackeo-backup.json", {
+				type: "application/json",
+			});
+			pendingFile = file;
+			confirmOpen = true;
+		} catch (err) {
+			toast.error(
+				err instanceof Error ? err.message : "Error al leer backup",
+			);
+		} finally {
+			importing = false;
+		}
+	}
+
+	function formatSyncDate(iso: string): string {
+		const date = new Date(iso);
+		const now = new Date();
+		const diffMin = Math.floor((now.getTime() - date.getTime()) / 60000);
+		if (diffMin < 1) return "ahora";
+		if (diffMin < 60) return `hace ${diffMin} min`;
+		const diffHr = Math.floor(diffMin / 60);
+		if (diffHr < 24) return `hace ${diffHr}h`;
+		return `hace ${Math.floor(diffHr / 24)} días`;
+	}
 </script>
 
 <div class="mx-auto flex max-w-md flex-col gap-4 p-4">
@@ -222,6 +319,58 @@
 				Hace {daysSinceBackup} días que no exportás tu backup.
 			</div>
 		{/if}
+
+		<div class="flex flex-col gap-3 rounded-xl border border-border p-4">
+			<span class="text-xs font-medium text-muted">Sync automático</span>
+
+			{#if !safUri}
+				<div class="flex items-center gap-2 text-sm text-muted">
+					Sin configurar
+				</div>
+				<button
+					onclick={handlePickFolder}
+					class="flex items-center gap-2 rounded-lg bg-surface-raised px-4 py-3 text-sm text-foreground transition-colors hover:opacity-80"
+				>
+					<Folder size={16} />
+					Configurar carpeta
+				</button>
+			{:else}
+				<div class="flex items-center gap-2 text-sm text-muted">
+					<Folder size={16} class="text-income" />
+					<span>Sync activo</span>
+				</div>
+				{#if lastSyncAt}
+					<div class="text-xs text-muted">
+						Último sync: {formatSyncDate(lastSyncAt)}
+					</div>
+				{/if}
+				<div class="flex flex-col gap-2">
+					<button
+						onclick={handleSyncNow}
+						disabled={syncing}
+						class="flex items-center gap-2 rounded-lg bg-surface-raised px-4 py-3 text-sm text-foreground transition-colors hover:opacity-80 disabled:opacity-50"
+					>
+						{syncing ? "Sincronizando..." : "Sincronizar ahora"}
+					</button>
+					<div class="flex gap-2">
+						<button
+							onclick={handleChangeFolder}
+							class="flex-1 rounded-lg bg-surface-raised px-3 py-2 text-xs text-muted transition-colors hover:opacity-80"
+							>Cambiar carpeta</button
+						>
+						<button
+							onclick={handleImportFromFolder}
+							disabled={importing}
+							class="flex-1 rounded-lg bg-surface-raised px-3 py-2 text-xs text-muted transition-colors hover:opacity-80 disabled:opacity-50"
+						>
+							{importing
+								? "Leyendo..."
+								: "Importar desde carpeta"}
+						</button>
+					</div>
+				</div>
+			{/if}
+		</div>
 	</div>
 
 	<div

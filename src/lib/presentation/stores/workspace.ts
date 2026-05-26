@@ -3,6 +3,7 @@ import { SqliteAccountRepository, SqliteCategoryRepository, SqliteRecordReposito
 import { AccountService, CategoryService, RecordService, SettingsService } from '../../application/services';
 import { ExportService } from '../../application/services/ExportService';
 import { ImportService } from '../../application/services/ImportService';
+import { setSyncSettingsRepo } from '../../application/services/SyncService';
 import { createCategory, DEFAULT_CATEGORIES } from '../../domain/entities';
 
 const accountRepo = new SqliteAccountRepository();
@@ -16,6 +17,7 @@ export const recordService = new RecordService(recordRepo);
 export const settingsService = new SettingsService(settingsRepo);
 export const exportService = new ExportService();
 export const importService = new ImportService();
+setSyncSettingsRepo(settingsRepo);
 
 let ready = false;
 let resolveReady: () => void;

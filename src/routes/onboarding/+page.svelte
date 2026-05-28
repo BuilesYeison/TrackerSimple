@@ -6,6 +6,7 @@
 	import { settingsService } from "$lib/presentation/stores/workspace";
 	import { importBackupFromFile } from "$lib/utils/import-backup";
 	import AccountForm from "$lib/presentation/components/AccountForm.svelte";
+	import SafSyncSection from "$lib/presentation/components/SafSyncSection.svelte";
 	import type { Currency } from "$lib/domain/entities";
 
 	let step = $state(1);
@@ -29,9 +30,8 @@
 		importing = true;
 		try {
 			await importBackupFromFile(pendingFile);
-			await settingsService.completeOnboarding();
 			toast.success("Backup importado");
-			setTimeout(() => goto("/dashboard"), 400);
+			step = 5;
 		} catch (err) {
 			toast.error(
 				err instanceof Error ? err.message : "Error al importar",
@@ -194,7 +194,40 @@
 				</div>
 				<AccountForm mode="create" onsuccess={onAccountCreated} />
 			</div>
-		{:else}
+		{:else if step === 5}
+			<div class="flex flex-col gap-6">
+				<div class="text-center">
+					<h1 class="text-2xl font-bold">Sincronización automática</h1>
+					<p class="mt-2 text-sm text-muted">
+						Configurá una carpeta para guardar backups automáticos.
+						Así no perdés tus datos si cambiás de celular.
+					</p>
+					<p class="mt-2 text-sm text-muted">
+						Necesitás una app como Dropsync para que los backups se
+						suban a la nube.
+					</p>
+				</div>
+				<SafSyncSection />
+				<div class="flex gap-2">
+					<button
+						onclick={() => {
+							step = 6;
+						}}
+						class="flex-1 rounded-xl bg-surface-raised px-4 py-3 text-sm text-muted transition-colors hover:opacity-90"
+					>
+						Omitir
+					</button>
+					<button
+						onclick={() => {
+							step = 6;
+						}}
+						class="flex-1 rounded-xl bg-primary px-4 py-3 text-sm font-medium text-primary-foreground transition-colors hover:opacity-90"
+					>
+						Continuar
+					</button>
+				</div>
+			</div>
+		{:else if step === 6}
 			<div class="flex flex-col items-center gap-6 text-center">
 				<div>
 					<h1 class="text-2xl font-bold">¡Listo!</h1>

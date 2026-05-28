@@ -58,4 +58,16 @@ export class SqliteCategoryRepository implements ICategoryRepository {
 		const result = await db.query(`SELECT * FROM categories WHERE name = ?`, [name]);
 		return result.values?.[0] ? mapRow(result.values[0]) : null;
 	}
+
+	async findByNameAndType(name: string, type: string): Promise<Category | null> {
+		const db = getDB();
+		const result = await db.query(`SELECT * FROM categories WHERE name = ? AND type = ?`, [name, type]);
+		return result.values?.[0] ? mapRow(result.values[0]) : null;
+	}
+
+	async delete(id: string): Promise<void> {
+		const db = getDB();
+		await db.run(`DELETE FROM categories WHERE id = ?`, [id]);
+		triggerSync();
+	}
 }

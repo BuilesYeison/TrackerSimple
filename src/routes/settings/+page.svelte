@@ -1,7 +1,8 @@
 <script lang="ts">
 	import { onMount } from "svelte";
+	import { goto } from "$app/navigation";
 	import { toast } from "svelte-sonner";
-	import { Download, Upload, Folder } from "@lucide/svelte";
+	import { Download, Upload, Folder, Tags } from "@lucide/svelte";
 	import { Share } from "@capacitor/share";
 	import * as AlertDialog from "$lib/components/ui/alert-dialog/index.js";
 	import {
@@ -220,6 +221,14 @@
 			</div>
 		{/if}
 	</div>
+
+	<button
+		onclick={() => goto("/settings/categories")}
+		class="flex items-center gap-2 rounded-xl border border-border p-4 text-sm text-foreground transition-colors hover:opacity-80"
+	>
+		<Tags size={16} />
+		Gestionar categorías
+	</button>
 
 	<SafSyncSection />
 

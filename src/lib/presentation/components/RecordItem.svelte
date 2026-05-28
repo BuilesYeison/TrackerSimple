@@ -86,6 +86,11 @@
 			<div class="text-xs text-muted truncate">
 				{displayAccount}
 			</div>
+			{#if record.note}
+				<div class="text-xs text-muted truncate italic">
+					{record.note}
+				</div>
+			{/if}
 		</div>
 		<span class="text-sm font-semibold shrink-0 {colorClass}"
 			>{formattedAmount}</span

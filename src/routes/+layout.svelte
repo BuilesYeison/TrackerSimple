@@ -4,6 +4,7 @@
 	import { page } from "$app/stores";
 	import Sidebar from "$lib/presentation/components/Sidebar.svelte";
 	import { Toaster } from "$lib/components/ui/sonner/index.js";
+	import * as Tooltip from "$lib/components/ui/tooltip/index.js";
 	import { App } from "@capacitor/app";
 	import { initWorkspace } from "$lib/presentation/stores";
 	import { reconnectDatabase } from "$lib/presentation/stores/workspace";
@@ -55,7 +56,9 @@
 	<div class="flex flex-col h-dvh">
 		<main class="flex-1 overflow-auto p-6 pt-14">
 			<Toaster />
-			{@render children()}
+			<Tooltip.Provider>
+				{@render children()}
+			</Tooltip.Provider>
 		</main>
 		{#if !$page.url.pathname.startsWith("/onboarding")}
 			<Sidebar />

@@ -66,7 +66,16 @@
 		}
 	});
 
-	const totalBalance = $derived.by(() => {
+	const liquidBalance = $derived.by(() => {
+		let sum = 0;
+		for (const [id, b] of balances) {
+			const acc = accounts.find((a) => a.id === id);
+			if (acc && acc.type !== "credit") sum += b;
+		}
+		return sum;
+	});
+
+	const netBalance = $derived.by(() => {
 		let sum = 0;
 		for (const [_, b] of balances) sum += b;
 		return sum;
@@ -133,7 +142,7 @@
 				</button>
 			</div>
 		{:else}
-			<BalanceTotal balance={totalBalance} {currency} />
+			<BalanceTotal {liquidBalance} {netBalance} {currency} />
 
 			<MonthSummary
 				income={monthIncome}

@@ -23,7 +23,7 @@ App mobile-first de finanzas personales. Local-first, offline-first, sin servido
 - **Local-first** — todos los datos se guardan en el dispositivo vía SQLite
 - **Offline-first** — cero conectividad requerida
 - **Privacidad total** — sin cuentas, sin backend, sin tracking
-- **Portabilidad** — exportación JSON abierta con checksum SHA-256
+- **Portabilidad** — exportación JSON abierta
 - **AI-friendly** — formato legible, estructura estable, fácil de consumir por agentes externos
 
 ---
@@ -38,7 +38,7 @@ App mobile-first de finanzas personales. Local-first, offline-first, sin servido
 | Dashboard con balance, resumen mensual, top categorías            | ✅      |
 | Listado de registros agrupados por día, filtros por tipo y mes    | ✅      |
 | Analytics: flujo de caja, balance acumulado, gastos por categoría | ✅      |
-| Exportación JSON con SHA-256 checksum                             | ✅      |
+| Exportación JSON                                              | ✅      |
 | Importación con validación y confirmación                         | ✅      |
 | Dark mode monocromático (#0a0a0a) con acentos verde/rojo/morado   | ✅      |
 | Aviso de backup (>7 días sin exportar)                            | ✅      |
@@ -97,9 +97,9 @@ Solo dark mode. Sin toggle claro/oscuro.
 
 ## Backup
 
-**Exportar:** `ExportService.createBackup()` genera un JSON con SHA-256 checksum. Se comparte vía el diálogo nativo del sistema (Drive, Dropbox, WhatsApp).
+**Exportar:** `ExportService.createBackup()` genera un JSON. Se comparte vía el diálogo nativo del sistema (Drive, Dropbox, WhatsApp).
 
-**Importar:** `ImportService.importFromFile()` valida el checksum antes de escribir. Siempre muestra confirmación `AlertDialog`.
+**Importar:** `ImportService.importFromFile()` siempre muestra confirmación `AlertDialog`.
 
 **Formato:**
 ```json
@@ -109,8 +109,7 @@ Solo dark mode. Sin toggle claro/oscuro.
   "accounts": [...],
   "categories": [...],
   "settings": {...},
-  "records": { "2026-01": [...], "2026-05": [...] },
-  "checksum": "e3b0c442..."
+  "records": { "2026-01": [...], "2026-05": [...] }
 }
 ```
 

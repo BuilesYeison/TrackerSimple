@@ -9,7 +9,7 @@
 - **Icons:** `@lucide/svelte` ONLY — zero emojis, ASCII arrows OK (→, —, ×, ÷)
 - **Lint/Format:** Biome (tabs, single quotes)
 - **Testing:** Vitest (unit only)
-- **Backup:** JSON plain-text (no ZIP), SHA-256 checksum via `crypto.subtle.digest`
+- **Backup:** JSON plain-text (no ZIP)
 
 ## Commands
 
@@ -83,9 +83,9 @@ src/lib/
 
 ## Backup system
 
-- **Export:** `ExportService.createBackup()` → returns JSON string with SHA-256 checksum
-- **Import:** `ImportService.importFromFile(file)` → validates checksum, then `executeSet()`
-- Backup format: flat JSON object with `version`, `exportedAt`, `accounts`, `categories`, `settings`, `records` (monthly segments), `checksum`
+- **Export:** `ExportService.createBackup()` → returns JSON string
+- **Import:** `ImportService.importFromFile(file)` → `executeSet()`
+- Backup format: flat JSON object with `version`, `exportedAt`, `accounts`, `categories`, `settings`, `records` (monthly segments)
 - **Import confirmation:** Always show `AlertDialog` before calling `importService.importFromFile()` (implemented in both settings and onboarding)
 - Import is wrapped in `executeSet()` which is atomic — no manual transaction management
 

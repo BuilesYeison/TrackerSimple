@@ -7,15 +7,6 @@ export interface BackupData {
 	categories: unknown[];
 	settings: unknown;
 	records: Record<string, unknown[]>;
-	checksum?: string;
-}
-
-async function sha256(data: string): Promise<string> {
-	const encoder = new TextEncoder();
-	const buffer = encoder.encode(data);
-	const hashBuffer = await crypto.subtle.digest('SHA-256', buffer);
-	const hashArray = Array.from(new Uint8Array(hashBuffer));
-	return hashArray.map((b) => b.toString(16).padStart(2, '0')).join('');
 }
 
 export class ExportService {
@@ -43,9 +34,6 @@ export class ExportService {
 			settings,
 			records: recordsByMonth,
 		};
-
-		const contentWithoutChecksum = JSON.stringify(backup, null, 2);
-		backup.checksum = await sha256(contentWithoutChecksum);
 
 		return JSON.stringify(backup, null, 2);
 	}

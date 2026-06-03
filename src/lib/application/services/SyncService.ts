@@ -31,13 +31,6 @@ export async function triggerSync(): Promise<void> {
 		}
 
 		const backup = { version: "1.0", exportedAt: new Date().toISOString(), accounts, categories, settings: dbSettings, records: recordsByMonth };
-		const contentWithoutChecksum = JSON.stringify(backup, null, 2);
-
-		const encoder = new TextEncoder();
-		const hashBuffer = await crypto.subtle.digest('SHA-256', encoder.encode(contentWithoutChecksum));
-		const hashArray = Array.from(new Uint8Array(hashBuffer));
-		(backup as any).checksum = hashArray.map((b) => b.toString(16).padStart(2, '0')).join('');
-
 		const json = JSON.stringify(backup, null, 2);
 		await SafPlugin.writeFile({ uri: settings.safUri, name: 'trackeo-backup.json', data: json });
 

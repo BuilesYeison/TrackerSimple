@@ -1,14 +1,6 @@
 import { getDB } from "$lib/infrastructure/db/sqlite";
 import type { capSQLiteSet } from '@capacitor-community/sqlite/dist/esm/definitions';
 
-async function sha256(data: string): Promise<string> {
-	const encoder = new TextEncoder();
-	const buffer = encoder.encode(data);
-	const hashBuffer = await crypto.subtle.digest('SHA-256', buffer);
-	const hashArray = Array.from(new Uint8Array(hashBuffer));
-	return hashArray.map((b) => b.toString(16).padStart(2, '0')).join('');
-}
-
 export async function importBackupFromFile(file: File): Promise<void> {
 	const text = await file.text();
 
@@ -53,15 +45,6 @@ export async function importBackupFromFile(file: File): Promise<void> {
 		const cat = c as Record<string, unknown>;
 		if (!cat.id || !cat.name || !cat.type) {
 			throw new Error("Una categoría en el backup no tiene 'id', 'name' o 'type'.");
-		}
-	}
-
-	if (data.checksum && typeof data.checksum === 'string') {
-		const embeddedChecksum = data.checksum;
-		const { checksum: _, ...dataWithoutChecksum } = data;
-		const computedChecksum = await sha256(JSON.stringify(dataWithoutChecksum, null, 2));
-		if (computedChecksum !== embeddedChecksum) {
-			throw new Error("El checksum del backup no coincide. El archivo puede estar corrupto o modificado.");
 		}
 	}
 

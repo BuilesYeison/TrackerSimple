@@ -14,6 +14,7 @@
 	import { getMonthRange, formatMonthLabel } from "$lib/utils/date-format";
 	import BalanceTotal from "$lib/presentation/components/BalanceTotal.svelte";
 	import MonthSummary from "$lib/presentation/components/MonthSummary.svelte";
+	import AccountCard from "$lib/presentation/components/AccountCard.svelte";
 	import TopCategories from "$lib/presentation/components/TopCategories.svelte";
 	import RecordItem from "$lib/presentation/components/RecordItem.svelte";
 	import {
@@ -129,6 +130,12 @@
 				<div
 					class="h-20 animate-pulse rounded-xl bg-surface mb-4"
 				></div>
+				<div
+					class="h-14 animate-pulse rounded-xl bg-surface mb-4"
+				></div>
+				<div
+					class="h-14 animate-pulse rounded-xl bg-surface mb-4"
+				></div>
 				<div class="h-32 animate-pulse rounded-xl bg-surface"></div>
 			</div>
 		{:else if error}
@@ -149,6 +156,29 @@
 				expense={monthExpense}
 				period={formatMonthLabel(today)}
 			/>
+
+			{#if accounts.length > 0}
+			<div class="flex items-center justify-between">
+				<h2 class="text-sm font-medium text-foreground">
+					Cuentas
+				</h2>
+				<a
+					href="/accounts"
+					class="text-xs text-muted hover:text-foreground transition-colors"
+				>
+					Ver todas
+				</a>
+			</div>
+
+			<div class="flex flex-col gap-2 -mt-3">
+				{#each accounts.slice(0, 4) as account (account.id)}
+					<AccountCard
+						{account}
+						balance={balances.get(account.id) ?? account.balance}
+					/>
+				{/each}
+			</div>
+			{/if}
 
 			<TopCategories categories={topCategories} />
 

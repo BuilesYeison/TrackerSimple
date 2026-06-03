@@ -143,6 +143,11 @@
 		importing = true;
 		try {
 			await importService.importFromFile(pendingFile);
+			const current = await settingsService.getSettings();
+			if (current) {
+				current.syncFileName = pendingFile.name;
+				await settingsService.updateSettings(current);
+			}
 			toast.success("Datos importados correctamente");
 			await closeDatabase();
 			setTimeout(() => window.location.reload(), 800);

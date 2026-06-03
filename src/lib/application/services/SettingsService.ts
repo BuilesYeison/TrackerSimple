@@ -19,6 +19,7 @@ export class SettingsService {
 			lastBackupAt: settings?.lastBackupAt,
 			safUri: settings?.safUri,
 			lastSyncAt: settings?.lastSyncAt,
+			syncFileName: settings?.syncFileName,
 		});
 	}
 
@@ -36,6 +37,7 @@ export class SettingsService {
 			lastBackupAt: settings?.lastBackupAt,
 			safUri: settings?.safUri,
 			lastSyncAt: settings?.lastSyncAt,
+			syncFileName: settings?.syncFileName,
 		});
 	}
 

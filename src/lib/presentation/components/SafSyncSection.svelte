@@ -14,6 +14,7 @@
 
 	let safUri = $state<string | null>(null);
 	let lastSyncAt = $state<string | null>(null);
+	let syncFileName = $state('trackeo-backup.json');
 	let syncing = $state(false);
 	let importingFromFolder = $state(false);
 	let confirmOpen = $state(false);
@@ -26,6 +27,7 @@
 		const settings = await settingsService.getSettings();
 		safUri = settings?.safUri ?? null;
 		lastSyncAt = settings?.lastSyncAt ?? null;
+		syncFileName = settings?.syncFileName || 'trackeo-backup.json';
 	});
 
 	async function handlePickFolder() {
@@ -60,13 +62,14 @@
 			const json = await exportService.createBackup();
 			await SafPlugin.writeFile({
 				uri: safUri,
-				name: 'trackeo-backup.json',
+				name: syncFileName || 'trackeo-backup.json',
 				data: json,
 			});
 			const now = new Date().toISOString();
 			const current = await settingsService.getSettings();
 			if (current) {
 				current.lastSyncAt = now;
+				current.syncFileName = syncFileName || 'trackeo-backup.json';
 				await settingsService.updateSettings(current);
 			}
 			lastSyncAt = now;
@@ -90,10 +93,10 @@
 			}
 			const result = await SafPlugin.readFile({
 				uri: safUri,
-				name: 'trackeo-backup.json',
+				name: syncFileName || 'trackeo-backup.json',
 			});
 			const blob = new Blob([result.data], { type: 'application/json' });
-			const file = new File([blob], 'trackeo-backup.json', {
+			const file = new File([blob], syncFileName || 'trackeo-backup.json', {
 				type: 'application/json',
 			});
 			pendingFile = file;
@@ -162,6 +165,10 @@
 				Último sync: {formatSyncDate(lastSyncAt)}
 			</div>
 		{/if}
+		<div class="flex items-center gap-2">
+			<span class="text-xs text-muted whitespace-nowrap">Archivo:</span>
+			<span class="text-sm text-foreground">{syncFileName || 'trackeo-backup.json'}</span>
+		</div>
 		<div class="flex flex-col gap-2">
 			<button
 				onclick={handleSyncNow}

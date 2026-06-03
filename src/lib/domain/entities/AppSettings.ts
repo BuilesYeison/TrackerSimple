@@ -7,4 +7,5 @@ export interface AppSettings {
 	lastBackupAt?: string;
 	safUri?: string;
 	lastSyncAt?: string;
+	syncFileName?: string;
 }

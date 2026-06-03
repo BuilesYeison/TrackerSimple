@@ -30,6 +30,11 @@
 		importing = true;
 		try {
 			await importBackupFromFile(pendingFile);
+			const current = await settingsService.getSettings();
+			if (current) {
+				current.syncFileName = pendingFile.name;
+				await settingsService.updateSettings(current);
+			}
 			toast.success("Backup importado");
 			step = 5;
 		} catch (err) {

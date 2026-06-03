@@ -32,7 +32,8 @@ export async function triggerSync(): Promise<void> {
 
 		const backup = { version: "1.0", exportedAt: new Date().toISOString(), accounts, categories, settings: dbSettings, records: recordsByMonth };
 		const json = JSON.stringify(backup, null, 2);
-		await SafPlugin.writeFile({ uri: settings.safUri, name: 'trackeo-backup.json', data: json });
+		const fileName = settings.syncFileName || 'trackeo-backup.json';
+		await SafPlugin.writeFile({ uri: settings.safUri, name: fileName, data: json });
 
 		settings.lastSyncAt = new Date().toISOString();
 		await settingsRepo.save(settings);

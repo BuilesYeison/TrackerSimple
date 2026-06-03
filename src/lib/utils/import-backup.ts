@@ -83,8 +83,8 @@ export async function importBackupFromFile(file: File): Promise<void> {
 
 	if (settings) {
 		statements.push({
-			statement: `INSERT OR REPLACE INTO settings (key, currency, onboardingCompleted, lastBackupAt) VALUES (?, ?, ?, ?)`,
-			values: [settings.key, settings.currency, (settings as any).onboardingCompleted ? 1 : 0, settings.lastBackupAt ?? null],
+			statement: `INSERT OR REPLACE INTO settings (key, currency, onboardingCompleted, lastBackupAt, safUri, lastSyncAt, syncFileName) VALUES (?, ?, ?, ?, ?, ?, ?)`,
+			values: [settings.key, settings.currency, (settings as any).onboardingCompleted ? 1 : 0, settings.lastBackupAt ?? null, (settings as any).safUri ?? null, (settings as any).lastSyncAt ?? null, (settings as any).syncFileName ?? null],
 		});
 	}
 

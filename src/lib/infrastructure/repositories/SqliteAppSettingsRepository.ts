@@ -12,6 +12,7 @@ function mapRow(row: SqliteRow): AppSettings {
 		lastBackupAt: (row.lastBackupAt as string | undefined) || undefined,
 		safUri: (row.safUri as string | undefined) || undefined,
 		lastSyncAt: (row.lastSyncAt as string | undefined) || undefined,
+		syncFileName: (row.syncFileName as string | undefined) || undefined,
 	};
 }
 
@@ -25,8 +26,8 @@ export class SqliteAppSettingsRepository implements IAppSettingsRepository {
 	async save(settings: AppSettings): Promise<void> {
 		const db = getDB();
 		await db.run(
-			`INSERT OR REPLACE INTO settings (key, currency, onboardingCompleted, lastBackupAt, safUri, lastSyncAt) VALUES (?, ?, ?, ?, ?, ?)`,
-			['default', settings.currency, settings.onboardingCompleted ? 1 : 0, settings.lastBackupAt || null, settings.safUri || null, settings.lastSyncAt || null],
+			`INSERT OR REPLACE INTO settings (key, currency, onboardingCompleted, lastBackupAt, safUri, lastSyncAt, syncFileName) VALUES (?, ?, ?, ?, ?, ?, ?)`,
+			['default', settings.currency, settings.onboardingCompleted ? 1 : 0, settings.lastBackupAt || null, settings.safUri || null, settings.lastSyncAt || null, settings.syncFileName || null],
 		);
 	}
 }

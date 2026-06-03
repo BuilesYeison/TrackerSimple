@@ -1,4 +1,5 @@
 import type { Record, RecordType } from '../../domain/entities';
+import type { AccountBalance, MonthlyAggregate, CategoryTotal } from '../../domain/entities';
 import type { IRecordRepository } from '../../domain/repositories';
 import { getDB } from '../db/sqlite';
 import { toISO, type SqliteRow } from '../db/sqlite-helpers';
@@ -83,5 +84,60 @@ export class SqliteRecordRepository implements IRecordRepository {
 		const db = getDB();
 		await db.run(`DELETE FROM records WHERE id = ?`, [id]);
 		triggerSync();
+	}
+
+	async getBalancesForActiveAccounts(): Promise<AccountBalance[]> {
+		const db = getDB();
+		const result = await db.query(`
+			SELECT
+				a.id AS accountId,
+				a.balance +
+					COALESCE(SUM(CASE WHEN r.type = 'income' AND r.accountId = a.id THEN r.amount ELSE 0 END), 0) -
+					COALESCE(SUM(CASE WHEN r.type = 'expense' AND r.accountId = a.id THEN r.amount ELSE 0 END), 0) -
+					COALESCE(SUM(CASE WHEN r.type = 'transfer' AND r.accountId = a.id THEN r.amount ELSE 0 END), 0) +
+					COALESCE(SUM(CASE WHEN r.type = 'transfer' AND r.toAccountId = a.id THEN r.amount ELSE 0 END), 0) AS balance
+			FROM accounts a
+			LEFT JOIN records r ON r.accountId = a.id OR r.toAccountId = a.id
+			WHERE a.isActive = 1
+			GROUP BY a.id
+		`);
+		return (result.values ?? []).map((row: SqliteRow) => ({
+			accountId: row.accountId as string,
+			balance: Number(row.balance),
+		}));
+	}
+
+	async getMonthlyAggregation(from: Date, to: Date): Promise<MonthlyAggregate[]> {
+		const db = getDB();
+		const result = await db.query(`
+			SELECT
+				strftime('%Y-%m', date) AS month,
+				COALESCE(SUM(CASE WHEN type = 'income' THEN amount ELSE 0 END), 0) AS income,
+				COALESCE(SUM(CASE WHEN type = 'expense' THEN amount ELSE 0 END), 0) AS expense
+			FROM records
+			WHERE date >= ? AND date <= ? AND type != 'transfer'
+			GROUP BY month
+			ORDER BY month ASC
+		`, [toISO(from), toISO(to)]);
+		return (result.values ?? []).map((row: SqliteRow) => ({
+			month: row.month as string,
+			income: Number(row.income),
+			expense: Number(row.expense),
+		}));
+	}
+
+	async getCategoryTotals(from: Date, to: Date, type: RecordType): Promise<CategoryTotal[]> {
+		const db = getDB();
+		const result = await db.query(`
+			SELECT categoryId, SUM(amount) AS total
+			FROM records
+			WHERE type = ? AND date >= ? AND date <= ?
+			GROUP BY categoryId
+			ORDER BY total DESC
+		`, [type, toISO(from), toISO(to)]);
+		return (result.values ?? []).map((row: SqliteRow) => ({
+			categoryId: row.categoryId as string,
+			total: Number(row.total),
+		}));
 	}
 }

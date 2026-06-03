@@ -1,6 +1,6 @@
 import { getDB, initDatabase } from '../../infrastructure/db/sqlite';
 import { SqliteAccountRepository, SqliteCategoryRepository, SqliteRecordRepository, SqliteAppSettingsRepository } from '../../infrastructure/repositories';
-import { AccountService, CategoryService, RecordService, SettingsService } from '../../application/services';
+import { AccountService, CategoryService, RecordService, SettingsService, AnalyticsService } from '../../application/services';
 import { ExportService } from '../../application/services/ExportService';
 import { ImportService } from '../../application/services/ImportService';
 import { setSyncSettingsRepo } from '../../application/services/SyncService';
@@ -15,6 +15,7 @@ export const accountService = new AccountService(accountRepo);
 export const categoryService = new CategoryService(categoryRepo);
 export const recordService = new RecordService(recordRepo);
 export const settingsService = new SettingsService(settingsRepo);
+export const analyticsService = new AnalyticsService(recordRepo);
 export const exportService = new ExportService();
 export const importService = new ImportService();
 setSyncSettingsRepo(settingsRepo);

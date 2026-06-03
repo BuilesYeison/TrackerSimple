@@ -8,3 +8,4 @@ export { createRecord } from './Record';
 export { DEFAULT_CATEGORIES } from './default-categories';
 export type { DefaultCategoryDef } from './default-categories';
 export type { AppSettings } from './AppSettings';
+export type { AccountBalance, MonthlyAggregate, CategoryTotal } from './aggregates';

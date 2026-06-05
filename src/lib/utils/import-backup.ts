@@ -35,7 +35,7 @@ export async function importBackupFromFile(file: File): Promise<void> {
 	if (!Array.isArray(data.categories)) {
 		throw new Error("Formato de backup inválido. 'categories' debe ser un array.");
 	}
-	if (!data.records || typeof data.records !== 'object') {
+	if (!data.records || typeof data.records !== 'object' || Array.isArray(data.records)) {
 		throw new Error("Formato de backup inválido. 'records' debe ser un objeto.");
 	}
 

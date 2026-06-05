@@ -10,6 +10,9 @@ node_modules
 /dev-dist
 /reports
 
+# Android release binaries
+/android/app/release
+
 # OS
 .DS_Store
 Thumbs.db

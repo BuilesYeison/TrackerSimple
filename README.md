@@ -1,6 +1,45 @@
 # trackersimple
 
-App mobile-first de finanzas personales. Local-first, offline-first, sin servidor, sin cuentas.
+App de finanzas personales simple, privada y local-first. Tus datos son tuyos — sin cuentas, sin servidores, sin rastreadores.
+
+Exporta tu historial financiero en JSON abierto y pásaselo a cualquier IA para que lo analice por vos.
+
+---
+
+## Por qué trackersimple
+
+- **Local-first** — todos los datos viven en SQLite, dentro de tu dispositivo
+- **Offline-first** — cero conectividad requerida, funciona en el metro, en un avión, donde sea
+- **Privacidad total** — sin registro, sin backend, sin analytics, sin permisos de red
+- **Dueño de tus datos** — exportación JSON abierta, legible, sin checksums ni formatos propietarios
+- **AI-friendly** — el backup es un JSON plano que cualquier LLM puede leer y analizar
+- **Sync automático local** — configurá una carpeta vía SAF (Android) y cada cambio se sincroniza automáticamente; con una app como Dropsync se sube a la nube sin intervención manual
+
+---
+
+## Plataformas
+
+| Plataforma | Estado |
+| ---------- | ------ |
+| Android    | Funcional |
+| iOS        | Planificado — el stack es multiplataforma, falta desarrollar el plugin SAF para iOS |
+
+---
+
+## Features
+
+| Feature                                                        | Estado |
+| -------------------------------------------------------------- | ------ |
+| Onboarding (moneda + primera cuenta + sync setup)              | ✅      |
+| CRUD de cuentas (efectivo, débito, crédito)                    | ✅      |
+| Registro rápido (gastos, ingresos, transferencias)             | ✅      |
+| Dashboard con balance, resumen mensual, top categorías         | ✅      |
+| Listado de registros agrupados por día, filtros por tipo y mes | ✅      |
+| Analytics: flujo de caja, balance acumulado, gastos por categoría | ✅   |
+| Exportación / importación JSON con confirmación                | ✅      |
+| Sincronización automática vía SAF + carpeta local              | ✅      |
+| Categorías personalizables por tipo                            | ✅      |
+| Dark mode monocromático con acentos verde/rojo/morado          | ✅      |
 
 ---
 
@@ -18,69 +57,41 @@ App mobile-first de finanzas personales. Local-first, offline-first, sin servido
 
 ---
 
-## Filosofía
-
-- **Local-first** — todos los datos se guardan en el dispositivo vía SQLite
-- **Offline-first** — cero conectividad requerida
-- **Privacidad total** — sin cuentas, sin backend, sin tracking
-- **Portabilidad** — exportación JSON abierta
-- **AI-friendly** — formato legible, estructura estable, fácil de consumir por agentes externos
-
----
-
-## Features (MVP)
-
-| Feature                                                           | Estado |
-| ----------------------------------------------------------------- | ------ |
-| Onboarding (moneda + primera cuenta)                              | ✅      |
-| CRUD de cuentas (efectivo, débito, crédito)                       | ✅      |
-| Registro rápido (gastos, ingresos, transferencias)                | ✅      |
-| Dashboard con balance, resumen mensual, top categorías            | ✅      |
-| Listado de registros agrupados por día, filtros por tipo y mes    | ✅      |
-| Analytics: flujo de caja, balance acumulado, gastos por categoría | ✅      |
-| Exportación JSON                                              | ✅      |
-| Importación con validación y confirmación                         | ✅      |
-| Dark mode monocromático (#0a0a0a) con acentos verde/rojo/morado   | ✅      |
-| Aviso de backup (>7 días sin exportar)                            | ✅      |
-
----
-
 ## Getting started
 
 ```sh
 npm install
 npm run build:sync
-npm run android       # o: npm run ios
+npm run android
 ```
 
 Para desarrollo de UI (sin SQLite):
+
 ```sh
 npm run dev -- --host
 ```
 
-Debuggear en dispositivo Android: conectar vía USB, abrir `chrome://inspect`.
+Debuggear WebView en Android: conectar dispositivo vía USB, abrir `chrome://inspect`.
 
 ---
 
 ## Arquitectura (Clean Architecture)
 
 ```
-domain/entities/        ← Account, Record, Category, AppSettings (puro TS)
-domain/repositories/    ← interfaces (IAccountRepository, etc.)
-application/services/   ← AccountService, RecordService, ExportService, etc.
-infrastructure/db/      ← SQLite connection manager + schema + migrations
-infrastructure/repos/   ← implementaciones concretas (SqliteAccountRepository, etc.)
-presentation/stores/    ← workspace.ts (composition root)
-presentation/components/← Svelte components reusables
+src/lib/
+  domain/             → entidades puras + interfaces de repositorio
+  application/        → servicios / casos de uso
+  infrastructure/     → SQLite, repositorios concretos, plugin SAF
+  presentation/       → componentes Svelte + stores
 ```
 
-**Regla**: UI nunca importa de `infrastructure/`. Todo pasa por servicios en `application/`.
+**Regla**: la UI nunca importa de `infrastructure/`. Todo pasa por servicios en `application/` vía el composition root `workspace.ts`.
 
 ---
 
 ## Diseño
 
-Sistema monocromático oscuro con tokens Tailwind v4 definidos en `src/app.css`:
+Sistema monocromático oscuro con tokens Tailwind v4 en `src/app.css`:
 
 | Token                             | Color                 | Uso                |
 | --------------------------------- | --------------------- | ------------------ |
@@ -95,17 +106,12 @@ Solo dark mode. Sin toggle claro/oscuro.
 
 ---
 
-## Backup
+## Formato de backup
 
-**Exportar:** `ExportService.createBackup()` genera un JSON. Se comparte vía el diálogo nativo del sistema (Drive, Dropbox, WhatsApp).
-
-**Importar:** `ImportService.importFromFile()` siempre muestra confirmación `AlertDialog`.
-
-**Formato:**
 ```json
 {
   "version": "1.0",
-  "exportedAt": "2026-05-24T...",
+  "exportedAt": "2026-06-05T...",
   "accounts": [...],
   "categories": [...],
   "settings": {...},
@@ -113,15 +119,10 @@ Solo dark mode. Sin toggle claro/oscuro.
 }
 ```
 
----
-
-## Reports
-
-- `reports/audit-mvp.md` — auditoría completa de seguridad, datos y confiabilidad (42 findings)
-- `reports/audit-progress.md` — tracking de resolución (36/42 done)
+Exportación vía diálogo nativo del sistema. Importación siempre con confirmación previa.
 
 ---
 
-## Fuera del MVP
+## Licencia
 
-Sincronización cloud, multiusuario, auth, conexión bancaria, OCR, presupuestos, inversiones, notificaciones.
+MIT — ver [LICENSE](./LICENSE).

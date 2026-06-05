@@ -25,9 +25,34 @@
 	onMount(async () => {
 		await workspaceReady;
 		const settings = await settingsService.getSettings();
-		safUri = settings?.safUri ?? null;
-		lastSyncAt = settings?.lastSyncAt ?? null;
+		const uri = settings?.safUri ?? null;
+		const lastSync = settings?.lastSyncAt ?? null;
 		syncFileName = settings?.syncFileName || 'trackeo-backup.json';
+
+		if (uri) {
+			try {
+				const hasPerm = await SafPlugin.hasPermission({ uri });
+				if (!hasPerm.valid) {
+					const current = await settingsService.getSettings();
+					if (current) {
+						current.safUri = undefined;
+						current.lastSyncAt = undefined;
+						await settingsService.updateSettings(current);
+					}
+				} else {
+					safUri = uri;
+					lastSyncAt = lastSync;
+				}
+			} catch {
+				// Permission check failed silently, clear stale state
+				const current = await settingsService.getSettings();
+				if (current) {
+					current.safUri = undefined;
+					current.lastSyncAt = undefined;
+					await settingsService.updateSettings(current);
+				}
+			}
+		}
 	});
 
 	async function handlePickFolder() {

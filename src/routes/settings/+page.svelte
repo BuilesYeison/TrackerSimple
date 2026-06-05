@@ -146,6 +146,8 @@
 			const current = await settingsService.getSettings();
 			if (current) {
 				current.syncFileName = pendingFile.name;
+				current.safUri = undefined;
+				current.lastSyncAt = undefined;
 				await settingsService.updateSettings(current);
 			}
 			toast.success("Datos importados correctamente");

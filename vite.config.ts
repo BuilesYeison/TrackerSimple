@@ -9,6 +9,13 @@ export default defineConfig({
 	],
 	server: { host: true },
 	test: {
-		include: ['src/**/*.{test,spec}.{js,ts}']
+		include: ['src/**/*.{test,spec}.{js,ts}'],
+		coverage: {
+			provider: 'v8',
+			reporter: ['text', 'html'],
+			reportsDirectory: './coverage',
+			include: ['src/lib/**/*.ts'],
+			exclude: ['src/lib/components/ui/**'],
+		},
 	}
 });

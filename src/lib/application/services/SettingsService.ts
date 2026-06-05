@@ -17,6 +17,9 @@ export class SettingsService {
 			currency,
 			onboardingCompleted: settings?.onboardingCompleted ?? false,
 			lastBackupAt: settings?.lastBackupAt,
+			safUri: settings?.safUri,
+			lastSyncAt: settings?.lastSyncAt,
+			syncFileName: settings?.syncFileName,
 		});
 	}
 
@@ -32,6 +35,9 @@ export class SettingsService {
 			currency: settings?.currency ?? 'COP',
 			onboardingCompleted: true,
 			lastBackupAt: settings?.lastBackupAt,
+			safUri: settings?.safUri,
+			lastSyncAt: settings?.lastSyncAt,
+			syncFileName: settings?.syncFileName,
 		});
 	}
 

@@ -1,7 +1,8 @@
 <script lang="ts">
 	import { onMount } from "svelte";
+	import { goto } from "$app/navigation";
 	import { toast } from "svelte-sonner";
-	import { Download, Upload, Folder } from "@lucide/svelte";
+	import { Download, Upload, Folder, Tags } from "@lucide/svelte";
 	import { Share } from "@capacitor/share";
 	import * as AlertDialog from "$lib/components/ui/alert-dialog/index.js";
 	import {
@@ -14,6 +15,7 @@
 	import type { Currency } from "$lib/domain/entities";
 	import { Capacitor } from "@capacitor/core";
 	import { Filesystem, Directory, Encoding } from "@capacitor/filesystem";
+	import SafSyncSection from "$lib/presentation/components/SafSyncSection.svelte";
 
 	let currency = $state<Currency>("COP");
 	let saving = $state(false);
@@ -88,7 +90,6 @@
 			const filename = `finapp-backup-${new Date().toISOString().split("T")[0]}.json`;
 
 			if (Capacitor.isNativePlatform()) {
-				// escribís el archivo en cache
 				await Filesystem.writeFile({
 					path: filename,
 					data: json,
@@ -96,20 +97,17 @@
 					encoding: Encoding.UTF8,
 				});
 
-				// obtenés la URI real del archivo
 				const { uri } = await Filesystem.getUri({
 					path: filename,
 					directory: Directory.Cache,
 				});
 
-				// compartís la URI — Android muestra "Guardar en Drive", "Guardar en Descargas", etc.
 				await Share.share({
 					title: "Backup FinApp",
-					url: uri, // ← URI del archivo, no base64
+					url: uri,
 					dialogTitle: "Guardar backup",
 				});
 			} else {
-				// fallback web para desarrollo
 				const blob = new Blob([json], { type: "application/json" });
 				const url = URL.createObjectURL(blob);
 				const a = document.createElement("a");
@@ -145,6 +143,13 @@
 		importing = true;
 		try {
 			await importService.importFromFile(pendingFile);
+			const current = await settingsService.getSettings();
+			if (current) {
+				current.syncFileName = pendingFile.name;
+				current.safUri = undefined;
+				current.lastSyncAt = undefined;
+				await settingsService.updateSettings(current);
+			}
 			toast.success("Datos importados correctamente");
 			await closeDatabase();
 			setTimeout(() => window.location.reload(), 800);
@@ -223,6 +228,16 @@
 			</div>
 		{/if}
 	</div>
+
+	<button
+		onclick={() => goto("/settings/categories")}
+		class="flex items-center gap-2 rounded-xl border border-border p-4 text-sm text-foreground transition-colors hover:opacity-80"
+	>
+		<Tags size={16} />
+		Gestionar categorías
+	</button>
+
+	<SafSyncSection />
 
 	<div
 		class="flex items-center justify-between rounded-xl border border-border p-4"

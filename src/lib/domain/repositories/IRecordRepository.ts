@@ -1,4 +1,6 @@
 import type { Record } from '../entities';
+import type { AccountBalance, MonthlyAggregate, CategoryTotal } from '../entities';
+import type { RecordType } from '../entities';
 
 export interface IRecordRepository {
 	create(record: Record): Promise<void>;
@@ -9,4 +11,7 @@ export interface IRecordRepository {
 	findByDateRange(from: Date, to: Date): Promise<Record[]>;
 	findAll(): Promise<Record[]>;
 	delete(id: string): Promise<void>;
+	getBalancesForActiveAccounts(): Promise<AccountBalance[]>;
+	getMonthlyAggregation(from: Date, to: Date): Promise<MonthlyAggregate[]>;
+	getCategoryTotals(from: Date, to: Date, type: RecordType): Promise<CategoryTotal[]>;
 }

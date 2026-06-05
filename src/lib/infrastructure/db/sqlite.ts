@@ -3,7 +3,7 @@ import type { SQLiteDBConnection } from '@capacitor-community/sqlite/dist/esm/de
 
 const sqliteConnection = new SQLiteConnection(CapacitorSQLite);
 const DB_NAME = 'trackersimple';
-const TARGET_VERSION = 2;
+const TARGET_VERSION = 4;
 let db: SQLiteDBConnection | null = null;
 
 export async function initDatabase(): Promise<void> {
@@ -102,6 +102,19 @@ async function runMigrations(): Promise<void> {
 		}
 
 		await setVersion(2);
+	}
+
+	if (current < 3) {
+		try { await db!.execute(`ALTER TABLE settings ADD COLUMN safUri TEXT`); } catch { /* already exists */ }
+		try { await db!.execute(`ALTER TABLE settings ADD COLUMN lastSyncAt TEXT`); } catch { /* already exists */ }
+
+		await setVersion(3);
+	}
+
+	if (current < 4) {
+		try { await db!.execute(`ALTER TABLE settings ADD COLUMN syncFileName TEXT`); } catch { /* already exists */ }
+
+		await setVersion(4);
 	}
 }
 

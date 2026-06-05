@@ -2,6 +2,7 @@ import type { Category, CategoryType } from '../../domain/entities';
 import type { ICategoryRepository } from '../../domain/repositories';
 import { getDB } from '../db/sqlite';
 import { toISO, type SqliteRow } from '../db/sqlite-helpers';
+import { triggerSync } from '../../application/services/SyncService';
 
 function mapRow(row: SqliteRow): Category {
 	return {
@@ -22,6 +23,7 @@ export class SqliteCategoryRepository implements ICategoryRepository {
 			 VALUES (?, ?, ?, ?, ?, ?)`,
 			[category.id, category.name, category.type, category.isDefault ? 1 : 0, toISO(category.createdAt), toISO(category.updatedAt)],
 		);
+		triggerSync();
 	}
 
 	async update(category: Category): Promise<void> {
@@ -30,6 +32,7 @@ export class SqliteCategoryRepository implements ICategoryRepository {
 			`UPDATE categories SET name = ?, type = ?, isDefault = ?, updatedAt = ? WHERE id = ?`,
 			[category.name, category.type, category.isDefault ? 1 : 0, toISO(new Date()), category.id],
 		);
+		triggerSync();
 	}
 
 	async findById(id: string): Promise<Category | null> {
@@ -54,5 +57,17 @@ export class SqliteCategoryRepository implements ICategoryRepository {
 		const db = getDB();
 		const result = await db.query(`SELECT * FROM categories WHERE name = ?`, [name]);
 		return result.values?.[0] ? mapRow(result.values[0]) : null;
+	}
+
+	async findByNameAndType(name: string, type: string): Promise<Category | null> {
+		const db = getDB();
+		const result = await db.query(`SELECT * FROM categories WHERE name = ? AND type = ?`, [name, type]);
+		return result.values?.[0] ? mapRow(result.values[0]) : null;
+	}
+
+	async delete(id: string): Promise<void> {
+		const db = getDB();
+		await db.run(`DELETE FROM categories WHERE id = ?`, [id]);
+		triggerSync();
 	}
 }

@@ -32,6 +32,10 @@ export class RecordService {
 		return this.repo.findByAccount(accountId);
 	}
 
+	async getByCategory(categoryId: string): Promise<Record[]> {
+		return this.repo.findByCategory(categoryId);
+	}
+
 	async getByDateRange(from: Date, to: Date): Promise<Record[]> {
 		return this.repo.findByDateRange(from, to);
 	}

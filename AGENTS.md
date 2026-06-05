@@ -9,7 +9,7 @@
 - **Icons:** `@lucide/svelte` ONLY — zero emojis, ASCII arrows OK (→, —, ×, ÷)
 - **Lint/Format:** Biome (tabs, single quotes)
 - **Testing:** Vitest (unit only)
-- **Backup:** JSON plain-text (no ZIP), SHA-256 checksum via `crypto.subtle.digest`
+- **Backup:** JSON plain-text (no ZIP)
 
 ## Commands
 
@@ -53,14 +53,14 @@ src/lib/
 │   ├── entities/        #   Account, Record, Category, AppSettings
 │   └── repositories/    #   IAccountRepository, IRecordRepository, etc.
 ├── application/         # Use cases / services (depend on interfaces only)
-│   └── services/        #   AccountService, RecordService, ExportService, etc.
+│   └── services/        #   AccountService, RecordService, ExportService, AnalyticsService, SyncService, etc.
 ├── infrastructure/      # Concrete implementations
 │   ├── db/              #   sqlite.ts (connection manager), sqlite-helpers.ts
 │   └── repositories/    #   SqliteAccountRepository, SqliteRecordRepository, etc.
 ├── presentation/
 │   ├── stores/          #   workspace.ts (composition root)
 │   └── components/      #   Svelte components
-├── utils/               #   helpers (balance, analytics-calc, import-backup, etc.)
+├── utils/               #   helpers (analytics-calc, import-backup, etc.)
 └── components/ui/       #   shadcn-svelte components (calendar, button, etc.)
 ```
 
@@ -76,18 +76,21 @@ src/lib/
 - `initDatabase()` creates/retrieves connection and runs schema migrations via `PRAGMA user_version`
 - `getDB()` returns the singleton `SQLiteDBConnection` — only call in infrastructure layer
 - **`executeSet(statements[])`** for batch writes (atomic, no manual transactions). DO NOT use `beginTransaction()`/`commitTransaction()` — it causes "Already in transaction" errors on Android.
-- Schema: 4 tables (`accounts`, `categories`, `records`, `settings`). `TARGET_VERSION = 2`.
+- Schema: 4 tables (`accounts`, `categories`, `records`, `settings`). `TARGET_VERSION = 4`.
 - Dates stored as ISO strings in TEXT columns. `mapRow()` converts to `Date` on read.
 - `SqliteRow` type (not `any`) for raw row parameters.
 - Shared helpers in `sqlite-helpers.ts`: `toISO()`, `SqliteRow`.
 
 ## Backup system
 
-- **Export:** `ExportService.createBackup()` → returns JSON string with SHA-256 checksum
-- **Import:** `ImportService.importFromFile(file)` → validates checksum, then `executeSet()`
-- Backup format: flat JSON object with `version`, `exportedAt`, `accounts`, `categories`, `settings`, `records` (monthly segments), `checksum`
-- **Import confirmation:** Always show `AlertDialog` before calling `importService.importFromFile()` (implemented in both settings and onboarding)
-- Import is wrapped in `executeSet()` which is atomic — no manual transaction management
+- **Export:** `ExportService.createBackup()` → returns JSON string (no checksum, user owns data)
+- **Import:** `ImportService.importFromFile(file)` → `executeSet()`. Import validates required fields per record type.
+- Backup format: flat JSON object with `version`, `exportedAt`, `accounts`, `categories`, `settings`, `records` (monthly segments)
+- **Import confirmation:** Always show `AlertDialog` before calling import (implemented in settings, onboarding, and SafSyncSection)
+- **SAF Sync:** `SyncService.triggerSync()` fire-and-forget, writes backup to configured SAF folder. Settings stores `safUri`, `lastSyncAt`, `syncFileName` (configurable filename, defaults to `trackeo-backup.json`).
+- Import clears device-specific fields (`safUri`, `lastSyncAt`) — they are tied to the device, not the data.
+- `SafSyncSection.svelte` validates SAF permission on mount; if invalid, clears stale `safUri`.
+- SQL aggregations via `AnalyticsService` → repository aggregate methods (no in-memory `calcBalance`).
 
 ## Svelte 5 runes ONLY
 

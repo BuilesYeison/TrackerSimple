@@ -10,13 +10,15 @@
 	}: {
 		account: Account;
 		balance: number;
-		onedit: () => void;
-		ondelete: () => Promise<void>;
+		onedit?: () => void;
+		ondelete?: () => Promise<void>;
 	} = $props();
 
 	let expanded = $state(false);
 	let deleting = $state(false);
 	let confirmOpen = $state(false);
+
+	const hasActions = $derived(!!onedit || !!ondelete);
 
 	const barColor = $derived(
 		account.type === "cash"
@@ -55,17 +57,19 @@
 </script>
 
 <div
-	class="rounded-xl bg-surface overflow-hidden cursor-pointer"
-	role="button"
-	tabindex="0"
-	aria-expanded={expanded}
-	onclick={() => (expanded = !expanded)}
-	onkeydown={(e) => {
-		if (e.key === "Enter" || e.key === " ") {
-			e.preventDefault();
-			expanded = !expanded;
-		}
-	}}
+	class="rounded-xl bg-surface overflow-hidden {hasActions ? 'cursor-pointer' : ''}"
+	role={hasActions ? 'button' : undefined}
+	tabindex={hasActions ? 0 : undefined}
+	aria-expanded={hasActions ? expanded : undefined}
+	onclick={hasActions ? () => (expanded = !expanded) : undefined}
+	onkeydown={hasActions
+		? (e) => {
+				if (e.key === "Enter" || e.key === " ") {
+					e.preventDefault();
+					expanded = !expanded;
+				}
+			}
+		: undefined}
 >
 	<div class="flex">
 		<div class="w-[3px] shrink-0 {barColor}"></div>
@@ -81,7 +85,7 @@
 			</div>
 		</div>
 	</div>
-	{#if expanded}
+	{#if hasActions && expanded}
 		<div class="flex gap-2 px-4 pb-3">
 			<button
 				class="flex-1 rounded-lg bg-surface-raised px-3 py-3 text-sm text-foreground transition-colors hover:opacity-80"

@@ -6,9 +6,9 @@
 	import {
 		accountService,
 		recordService,
+		analyticsService,
 		workspaceReady,
 	} from "$lib/presentation/stores/workspace";
-	import { calcBalance } from "$lib/utils/balance";
 	import AccountCard from "$lib/presentation/components/AccountCard.svelte";
 	import type { Account } from "$lib/domain/entities";
 
@@ -19,14 +19,8 @@
 	onMount(async () => {
 		await workspaceReady;
 		const activeAccounts = await accountService.getActive();
-		const balanceMap = new Map<string, number>();
-		const promises = activeAccounts.map(async (acc) => {
-			const b = await calcBalance(acc, recordService);
-			balanceMap.set(acc.id, b);
-		});
-		await Promise.all(promises);
 		accounts = activeAccounts;
-		balances = balanceMap;
+		balances = await analyticsService.getAccountBalances();
 		loading = false;
 	});
 

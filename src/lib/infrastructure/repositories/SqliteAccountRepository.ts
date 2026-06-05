@@ -2,6 +2,7 @@ import type { Account, AccountType, Currency } from '../../domain/entities';
 import type { IAccountRepository } from '../../domain/repositories';
 import { getDB } from '../db/sqlite';
 import { toISO, type SqliteRow } from '../db/sqlite-helpers';
+import { triggerSync } from '../../application/services/SyncService';
 
 function mapRow(row: SqliteRow): Account {
 	const typedRow = row as Record<string, unknown>;
@@ -25,6 +26,7 @@ export class SqliteAccountRepository implements IAccountRepository {
 			 VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
 			[account.id, account.name, account.type, account.currency, account.balance, account.isActive ? 1 : 0, toISO(account.createdAt), toISO(account.updatedAt)],
 		);
+		triggerSync();
 	}
 
 	async update(account: Account): Promise<void> {
@@ -33,6 +35,7 @@ export class SqliteAccountRepository implements IAccountRepository {
 			`UPDATE accounts SET name = ?, type = ?, currency = ?, balance = ?, isActive = ?, updatedAt = ? WHERE id = ?`,
 			[account.name, account.type, account.currency, account.balance, account.isActive ? 1 : 0, toISO(new Date()), account.id],
 		);
+		triggerSync();
 	}
 
 	async findById(id: string): Promise<Account | null> {
@@ -56,5 +59,6 @@ export class SqliteAccountRepository implements IAccountRepository {
 	async delete(id: string): Promise<void> {
 		const db = getDB();
 		await db.run(`DELETE FROM accounts WHERE id = ?`, [id]);
+		triggerSync();
 	}
 }

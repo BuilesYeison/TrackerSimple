@@ -10,11 +10,12 @@
 		"android": "npm run build:sync && npx cap open android",
 		"ios": "npm run build:sync && npx cap open ios",
 		"preview": "vite preview",
-		"prepare": "svelte-kit sync || echo ''",
+		"prepare": "husky",
 		"check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
 		"check:watch": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json --watch",
 		"test:unit": "vitest",
-		"test": "npm run test:unit -- --run"
+		"test": "npm run test:unit -- --run",
+		"test:coverage": "vitest --run --coverage"
 	},
 	"devDependencies": {
 		"@capacitor/cli": "^8.3.4",
@@ -27,8 +28,10 @@
 		"@tailwindcss/vite": "^4.2.2",
 		"@types/uuid": "^10.0.0",
 		"@vitest/browser-playwright": "^4.1.3",
+		"@vitest/coverage-v8": "^4.1.6",
 		"biome": "^0.3.3",
 		"bits-ui": "^2.18.1",
+		"husky": "^9.1.7",
 		"playwright": "^1.59.1",
 		"svelte": "^5.55.2",
 		"svelte-check": "^4.4.6",

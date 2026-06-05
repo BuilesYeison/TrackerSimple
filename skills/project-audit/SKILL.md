@@ -122,7 +122,6 @@ Restore flow:
 
 * overwrite safety
 * import validation
-* checksum validation
 * invalid backup handling
 * duplicate restore handling
 * partial restore protection

@@ -8,12 +8,13 @@
 		categoryService,
 		recordService,
 		settingsService,
+		analyticsService,
 		workspaceReady,
 	} from "$lib/presentation/stores/workspace";
-	import { calcBalance } from "$lib/utils/balance";
 	import { getMonthRange, formatMonthLabel } from "$lib/utils/date-format";
 	import BalanceTotal from "$lib/presentation/components/BalanceTotal.svelte";
 	import MonthSummary from "$lib/presentation/components/MonthSummary.svelte";
+	import AccountCard from "$lib/presentation/components/AccountCard.svelte";
 	import TopCategories from "$lib/presentation/components/TopCategories.svelte";
 	import RecordItem from "$lib/presentation/components/RecordItem.svelte";
 	import {
@@ -24,10 +25,12 @@
 
 	let accounts = $state<Account[]>([]);
 	let categories: Category[] = $state([]);
-	let monthRecords: Record[] = $state([]);
 	let balances = $state(new Map<string, number>());
 	let currency = $state("COP");
 	let recentRecords = $state<Record[]>([]);
+	let monthIncome = $state(0);
+	let monthExpense = $state(0);
+	let topCategoryTotals = $state<{ categoryId: string; total: number }[]>([]);
 	let loading = $state(true);
 	let error = $state("");
 
@@ -49,13 +52,16 @@
 				today.getFullYear(),
 				today.getMonth(),
 			);
-			monthRecords = await recordService.getByDateRange(from, to);
 
-			const balanceMap = new Map<string, number>();
-			for (const acc of accounts) {
-				balanceMap.set(acc.id, await calcBalance(acc, recordService));
-			}
-			balances = balanceMap;
+			balances = await analyticsService.getAccountBalances();
+
+			const monthlyData = await analyticsService.getMonthlyAggregation(from, to);
+			monthIncome = monthlyData.reduce((s, d) => s + d.income, 0);
+			monthExpense = monthlyData.reduce((s, d) => s + d.expense, 0);
+
+			const totals = await analyticsService.getCategoryTotals(from, to, "expense");
+			topCategoryTotals = totals;
+
 			recentRecords = await recordService.getRecent(5);
 		} catch (err) {
 			error =
@@ -66,39 +72,28 @@
 		}
 	});
 
-	const totalBalance = $derived.by(() => {
+	const liquidBalance = $derived.by(() => {
 		let sum = 0;
-		for (const [_, b] of balances) sum += b;
+		for (const acc of accounts) {
+			if (acc.type !== "credit") sum += balances.get(acc.id) ?? 0;
+		}
 		return sum;
 	});
 
-	const monthIncome = $derived(
-		monthRecords
-			.filter((r) => r.type === "income")
-			.reduce((s, r) => s + r.amount, 0),
-	);
-
-	const monthExpense = $derived(
-		monthRecords
-			.filter((r) => r.type === "expense")
-			.reduce((s, r) => s + r.amount, 0),
-	);
+	const netBalance = $derived.by(() => {
+		let sum = 0;
+		for (const b of balances.values()) sum += b;
+		return sum;
+	});
 
 	const topCategories = $derived.by(() => {
-		const map = new Map<string, number>();
-		for (const r of monthRecords) {
-			if (r.type === "expense") {
-				map.set(r.categoryId, (map.get(r.categoryId) ?? 0) + r.amount);
-			}
-		}
-		const max = Math.max(...map.values(), 1);
-		return Array.from(map.entries())
-			.map(([id, amt]) => ({
-				name: lookupCategory(id),
-				amount: amt,
+		const max = topCategoryTotals[0]?.total ?? 1;
+		return topCategoryTotals
+			.map((t) => ({
+				name: lookupCategory(t.categoryId),
+				amount: t.total,
 				maxAmount: max,
 			}))
-			.sort((a, b) => b.amount - a.amount)
 			.slice(0, 3);
 	});
 
@@ -120,6 +115,12 @@
 				<div
 					class="h-20 animate-pulse rounded-xl bg-surface mb-4"
 				></div>
+				<div
+					class="h-14 animate-pulse rounded-xl bg-surface mb-4"
+				></div>
+				<div
+					class="h-14 animate-pulse rounded-xl bg-surface mb-4"
+				></div>
 				<div class="h-32 animate-pulse rounded-xl bg-surface"></div>
 			</div>
 		{:else if error}
@@ -133,13 +134,36 @@
 				</button>
 			</div>
 		{:else}
-			<BalanceTotal balance={totalBalance} {currency} />
+			<BalanceTotal {liquidBalance} {netBalance} {currency} />
 
 			<MonthSummary
 				income={monthIncome}
 				expense={monthExpense}
 				period={formatMonthLabel(today)}
 			/>
+
+			{#if accounts.length > 0}
+			<div class="flex items-center justify-between">
+				<h2 class="text-sm font-medium text-foreground">
+					Cuentas
+				</h2>
+				<a
+					href="/accounts"
+					class="text-xs text-muted hover:text-foreground transition-colors"
+				>
+					Ver todas
+				</a>
+			</div>
+
+			<div class="flex flex-col gap-2 -mt-3">
+				{#each accounts.slice(0, 4) as account (account.id)}
+					<AccountCard
+						{account}
+						balance={balances.get(account.id) ?? account.balance}
+					/>
+				{/each}
+			</div>
+			{/if}
 
 			<TopCategories categories={topCategories} />
 

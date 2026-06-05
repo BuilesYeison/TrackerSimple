@@ -1,14 +1,15 @@
 <script lang="ts">
 	import { onMount } from "svelte";
 	import { toast } from "svelte-sonner";
-	import { accountService, categoryService, recordService, workspaceReady } from "$lib/presentation/stores/workspace";
-	import { groupByMonth, cumulativeBalance, topExpenseCategories, getMonthRangeLabels, sanitizeMonthlyData, sanitizeCumulData } from "$lib/utils/analytics-calc";
-	import type { Account, Category, Record } from "$lib/domain/entities";
+	import { accountService, categoryService, analyticsService, workspaceReady } from "$lib/presentation/stores/workspace";
+	import { getMonthRangeLabels, sanitizeMonthlyData, sanitizeCumulData } from "$lib/utils/analytics-calc";
+	import type { Account, Category, MonthlyAggregate, CategoryTotal } from "$lib/domain/entities";
 
 	let period = $state<"3m" | "6m" | "year">("6m");
 	let accounts = $state<Account[]>([]);
 	let categories = $state<Category[]>([]);
-	let allRecords = $state<Record[]>([]);
+	let monthlyData = $state<MonthlyAggregate[]>([]);
+	let categoryTotals = $state<CategoryTotal[]>([]);
 	let loading = $state(true);
 	let error = $state("");
 
@@ -30,7 +31,8 @@
 		const months = getMonthRangeLabels(period);
 		const from = months[0];
 		const to = new Date(months[months.length - 1].getFullYear(), months[months.length - 1].getMonth() + 1, 0, 23, 59, 59);
-		allRecords = await recordService.getByDateRange(from, to);
+		monthlyData = sanitizeMonthlyData(await analyticsService.getMonthlyAggregation(from, to));
+		categoryTotals = await analyticsService.getCategoryTotals(from, to, "expense");
 	}
 
 	async function changePeriod(p: "3m" | "6m" | "year") {
@@ -46,27 +48,54 @@
 	}
 
 	const months = $derived(getMonthRangeLabels(period));
-	const rawMonthly = $derived(groupByMonth(allRecords, months));
-	const rawCumul = $derived(cumulativeBalance(allRecords, accounts, months));
-	const categoryData = $derived(topExpenseCategories(allRecords, categories));
 
-	const monthlyData = $derived(sanitizeMonthlyData(rawMonthly));
-	const cumulData = $derived(sanitizeCumulData(rawCumul));
+	const monthlyAgg = $derived.by(() => {
+		return months.map((m) => {
+			const key = `${m.getFullYear()}-${String(m.getMonth() + 1).padStart(2, "0")}`;
+			const label = m.toLocaleDateString("es", { month: "short", year: "2-digit" });
+			const found = monthlyData.find((d) => d.month === key);
+			return {
+				month: key,
+				label,
+				income: found?.income ?? 0,
+				expense: found?.expense ?? 0,
+			};
+		});
+	});
 
-	const totalIncome = $derived(monthlyData.reduce((s, d) => s + d.income, 0));
-	const totalExpense = $derived(monthlyData.reduce((s, d) => s + d.expense, 0));
+	const initialBalance = $derived(accounts.reduce((sum, a) => sum + (a.balance ?? 0), 0));
+
+	const cumulData = $derived.by(() => {
+		const result: { month: string; label: string; balance: number }[] = [];
+		let running = initialBalance;
+		for (const m of monthlyAgg) {
+			running += m.income - m.expense;
+			result.push({ month: m.month, label: m.label, balance: running });
+		}
+		return sanitizeCumulData(result);
+	});
+
+	const totalIncome = $derived(monthlyAgg.reduce((s, d) => s + d.income, 0));
+	const totalExpense = $derived(monthlyAgg.reduce((s, d) => s + d.expense, 0));
 	const netSavings = $derived(totalIncome - totalExpense);
 
-	const maxNet = $derived(Math.max(...monthlyData.map((d) => Math.abs(d.income - d.expense)), 1));
+	const maxNet = $derived(Math.max(...monthlyAgg.map((d) => Math.abs(d.income - d.expense)), 1));
 	const minCumul = $derived(Math.min(...cumulData.map((d) => d.balance), 0));
 	const maxCumul = $derived(Math.max(...cumulData.map((d) => d.balance), 1));
 	const cumulRange = $derived(maxCumul - minCumul || 1);
+
+	const categoryData = $derived(
+		categoryTotals.map((t) => ({
+			name: categories.find((c) => c.id === t.categoryId)?.name ?? "—",
+			amount: t.total,
+		})).sort((a, b) => b.amount - a.amount),
+	);
 
 	const top5 = $derived(categoryData.slice(0, 5));
 	const maxCategory = $derived(categoryData[0]?.amount ?? 1);
 	const totalCategoryExpense = $derived(categoryData.reduce((s, c) => s + c.amount, 0));
 
-	const hasData = $derived(monthlyData.some((d) => d.income > 0 || d.expense > 0));
+	const hasData = $derived(monthlyAgg.some((d) => d.income > 0 || d.expense > 0));
 
 	const svgW = $derived(months.length * 40 + 40);
 	const svgH = 140;
@@ -146,7 +175,7 @@
 			<h2 class="mb-3 text-sm font-medium text-foreground">Flujo de caja</h2>
 			<div class="flex items-end gap-1 h-40 relative">
 				<div class="absolute top-1/2 left-0 right-0 border-t border-muted/20 -translate-y-px"></div>
-				{#each monthlyData as d, i}
+				{#each monthlyAgg as d, i}
 					{@const net = d.income - d.expense}
 					{@const h = Math.max(4, (Math.abs(net) / maxNet) * 100)}
 					<div class="flex-1 flex flex-col items-center gap-1 h-full justify-end">

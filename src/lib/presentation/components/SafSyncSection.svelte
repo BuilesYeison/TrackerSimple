@@ -20,7 +20,11 @@
 	let confirmOpen = $state(false);
 	let pendingFile = $state<File | null>(null);
 
-	const { onsuccess } = $props<{ onsuccess?: () => void }>();
+	let { onsuccess, hasAutoSync = $bindable(false) } = $props<{ onsuccess?: () => void; hasAutoSync?: boolean }>();
+
+	$effect(() => {
+		hasAutoSync = !!safUri;
+	});
 
 	onMount(async () => {
 		await workspaceReady;
@@ -173,6 +177,7 @@
 		<div class="flex items-center gap-2 text-sm text-muted">
 			Sin configurar
 		</div>
+		<div class="text-xs text-warning">Configurá la carpeta de sync para hacer copias de seguridad automáticas de tus datos.</div>
 		<button
 			onclick={handlePickFolder}
 			class="flex items-center gap-2 rounded-lg bg-surface-raised px-4 py-3 text-sm text-foreground transition-colors hover:opacity-80"

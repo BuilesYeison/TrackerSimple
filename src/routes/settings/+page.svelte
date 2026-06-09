@@ -2,7 +2,7 @@
 	import { onMount } from "svelte";
 	import { goto } from "$app/navigation";
 	import { toast } from "svelte-sonner";
-	import { Download, Upload, Folder, Tags } from "@lucide/svelte";
+	import { Download, Upload, Tags, ExternalLink } from "@lucide/svelte";
 	import { Share } from "@capacitor/share";
 	import * as AlertDialog from "$lib/components/ui/alert-dialog/index.js";
 	import {
@@ -24,6 +24,7 @@
 	let lastBackupAt = $state<string | null>(null);
 	let confirmOpen = $state(false);
 	let pendingFile = $state<File | null>(null);
+	let autoSyncConfigured = $state(false);
 
 	onMount(async () => {
 		await workspaceReady;
@@ -168,31 +169,40 @@
 <div class="mx-auto flex max-w-md flex-col gap-4 p-4">
 	<h1 class="text-2xl font-bold">Ajustes</h1>
 
-	<div class="flex flex-col gap-1 rounded-xl border border-border p-4">
-		<span class="text-xs font-medium text-muted">Moneda principal</span>
-		<select
-			bind:value={currency}
-			onchange={handleCurrencyChange}
-			disabled={saving}
-			class="rounded-lg border border-border bg-background px-3 py-2 w-full text-sm text-foreground disabled:opacity-50"
+	<div class="flex flex-col gap-3 rounded-xl border border-border p-4">
+		<span class="text-xs font-medium text-muted">Configuración</span>
+
+		<div class="flex flex-col gap-1">
+			<span class="text-xs text-muted">Moneda principal</span>
+			<select
+				bind:value={currency}
+				onchange={handleCurrencyChange}
+				disabled={saving}
+				class="rounded-lg border border-border bg-background px-3 py-2 w-full text-sm text-foreground disabled:opacity-50"
+			>
+				<option value="COP">COP — Peso colombiano</option>
+				<option value="USD">USD — Dólar estadounidense</option>
+				<option value="EUR">EUR — Euro</option>
+				<option value="ARS">ARS — Peso argentino</option>
+				<option value="MXN">MXN — Peso mexicano</option>
+				<option value="CLP">CLP — Peso chileno</option>
+				<option value="PEN">PEN — Sol peruano</option>
+			</select>
+		</div>
+
+		<button
+			onclick={() => goto("/settings/categories")}
+			class="flex items-center gap-2 rounded-lg bg-surface-raised px-4 py-3 text-sm text-foreground transition-colors hover:opacity-80"
 		>
-			<option value="COP">COP — Peso colombiano</option>
-			<option value="USD">USD — Dólar estadounidense</option>
-			<option value="EUR">EUR — Euro</option>
-			<option value="ARS">ARS — Peso argentino</option>
-			<option value="MXN">MXN — Peso mexicano</option>
-			<option value="CLP">CLP — Peso chileno</option>
-			<option value="PEN">PEN — Sol peruano</option>
-		</select>
+			<Tags size={16} />
+			Gestionar categorías
+		</button>
 	</div>
 
-	<div class="flex flex-col gap-3 rounded-xl border border-border p-4">
-		<span class="text-xs font-medium text-muted">Almacenamiento</span>
+	<SafSyncSection bind:hasAutoSync={autoSyncConfigured} />
 
-		<div class="flex items-center gap-2 text-sm">
-			<Folder size={16} class="text-muted" />
-			<span class="text-muted">SQLite — solo en este dispositivo</span>
-		</div>
+	<div class="flex flex-col gap-3 rounded-xl border border-border p-4">
+		<span class="text-xs font-medium text-muted">Backup manual</span>
 
 		<button
 			onclick={handleExport}
@@ -222,29 +232,23 @@
 				Último backup: {formatBackupDate(lastBackupAt)}
 			</div>
 		{/if}
-		{#if daysSinceBackup !== null && daysSinceBackup > 7}
+		{#if !autoSyncConfigured && daysSinceBackup !== null && daysSinceBackup > 7}
 			<div class="text-xs text-expense">
 				Hace {daysSinceBackup} días que no exportás tu backup.
 			</div>
 		{/if}
 	</div>
 
-	<button
-		onclick={() => goto("/settings/categories")}
+	<a
+		href="https://github.com/BuilesYeison/TrackerSimple"
+		target="_blank"
+		rel="noopener noreferrer"
 		class="flex items-center gap-2 rounded-xl border border-border p-4 text-sm text-foreground transition-colors hover:opacity-80"
 	>
-		<Tags size={16} />
-		Gestionar categorías
-	</button>
-
-	<SafSyncSection />
-
-	<div
-		class="flex items-center justify-between rounded-xl border border-border p-4"
-	>
-		<span>Acerca de trackersimple</span>
+		<ExternalLink size={16} />
+		<span class="flex-1">Acerca de TrackerSimple</span>
 		<span class="text-xs text-muted">v0.0.1</span>
-	</div>
+	</a>
 </div>
 
 <AlertDialog.Root bind:open={confirmOpen}>

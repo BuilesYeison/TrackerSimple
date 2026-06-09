@@ -16,6 +16,7 @@
 	--color-cash: #6b7280;
 	--color-debit: #3b82f6;
 	--color-credit: #f59e0b;
+	--color-warning: #f59e0b;
 	--color-popover: #0a0a0a;
 	--color-popover-foreground: #fafafa;
 	--color-card: #111;
@@ -50,6 +51,7 @@
 	--border: var(--color-border);
 	--input: var(--color-border);
 	--ring: var(--color-income);
+	--warning: var(--color-warning);
 }
 
 body {
